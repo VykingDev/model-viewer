@@ -214,6 +214,18 @@ canvas {
   display: none;
 }
 
+.slot.vto-button {
+  -moz-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+
+  display: var(--vto-button-display, block);
+}
+
+.slot.vto-button:not(.enabled) {
+  display: none;
+}
+
 .fab {
   display: flex;
   align-items: center;
@@ -236,6 +248,14 @@ canvas {
   bottom: 16px;
   right: 16px;
   transform: scale(var(--ar-button-scale, 1));
+  transform-origin: bottom right;
+}
+
+#default-vto-button {
+  position: absolute;
+  bottom: 56px;
+  right: 16px;
+  transform: scale(var(--vto-button-scale, 1));
   transform-origin: bottom right;
 }
 
@@ -316,6 +336,16 @@ canvas {
       <a id="default-ar-button" part="default-ar-button" class="fab"
           tabindex="2"
           aria-label="View in your space">
+        ${ARGlyph}
+      </a>
+    </slot>
+  </div>
+
+  <div class="slot vto-button">
+    <slot name="vto-button">
+      <a id="default-vto-button" part="default-vto-button" class="fab"
+          tabindex=4"
+          aria-label="View on your body">
         ${ARGlyph}
       </a>
     </slot>

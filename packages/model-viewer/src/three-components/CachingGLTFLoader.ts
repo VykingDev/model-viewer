@@ -16,6 +16,7 @@
 import {Event as ThreeEvent, EventDispatcher, Texture, WebGLRenderer} from 'three';
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { VykingGLTFLoader } from './VykingGLTFLoader';
 import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import ModelViewerElementBase from '../model-viewer-base.js';
@@ -178,7 +179,7 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
     this[$loader].setKTX2Loader(ktx2Loader);
   }
 
-  protected[$loader]: GLTFLoader = new GLTFLoader().register(
+  protected[$loader]: GLTFLoader = new VykingGLTFLoader().register(
       parser => new GLTFMaterialsVariantsExtension(parser));
   protected[$GLTFInstance]: T;
 

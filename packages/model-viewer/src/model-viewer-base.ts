@@ -71,6 +71,7 @@ export const $getLoaded = Symbol('getLoaded');
 export const $getModelIsVisible = Symbol('getModelIsVisible');
 export const $shouldAttemptPreload = Symbol('shouldAttemptPreload');
 
+export const $poster = Symbol('poster');
 export interface Vector3D {
   x: number
   y: number
@@ -214,6 +215,8 @@ export default class ModelViewerElementBase extends ReactiveElement {
   protected[$intersectionObserver]: IntersectionObserver|null = null;
 
   protected[$progressTracker]: ProgressTracker = new ProgressTracker();
+
+  protected[$poster]: string|null = null;
 
   /** @export */
   get loaded() {

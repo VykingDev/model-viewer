@@ -16,6 +16,7 @@
 import {AnimationMixin} from './features/animation.js';
 import {AnnotationMixin} from './features/annotation.js';
 import {ARMixin} from './features/ar.js';
+import {VTOMixin} from './features/vto.js';
 import {ControlsMixin} from './features/controls.js';
 import {EnvironmentMixin} from './features/environment.js';
 import {LoadingMixin} from './features/loading.js';
@@ -29,8 +30,8 @@ export {CanvasTexture, FileLoader, Loader, NearestFilter} from 'three';
 
 export const ModelViewerElement =
     AnnotationMixin(SceneGraphMixin(StagingMixin(EnvironmentMixin(ControlsMixin(
-        ARMixin(LoadingMixin(AnimationMixin(ModelViewerElementBase))))))));
-
+        ARMixin(LoadingMixin(AnimationMixin(VTOMixin(ModelViewerElementBase)))))))));
+      
 export type ModelViewerElement = InstanceType<typeof ModelViewerElement>;
 
 export {RGB, RGBA} from './three-components/gltf-instance/gltf-2.0';
