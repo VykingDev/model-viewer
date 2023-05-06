@@ -23,15 +23,15 @@ import { Constructor, waitForEvent } from '../utilities.js';
 
 let isVTOBlocked = false;
 
-export type VTOMode = 'iframe' | 'none';
+export type VTOMode = 'vyking-vto' | 'none';
 
 const deserializeVTOModes = enumerationDeserializer<VTOMode>(
-    ['iframe', 'none']);
+    ['vyking-vto', 'none']);
 
-const DEFAULT_VTO_MODES = 'iframe';
+const DEFAULT_VTO_MODES = 'vyking-vto';
 
 const VTOMode: { [index: string]: VTOMode } = {
-    IFRAME: 'iframe',
+    VYKING_VTO: 'vyking-vto',
     NONE: 'none'
 };
 
@@ -156,7 +156,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         async activateVTO() {
             console.log(`VTOModelViewerElement.activateVTO`)
             switch (this[$vtoMode]) {
-                case VTOMode.IFRAME:
+                case VTOMode.VYKING_VTO:
                     this[$openIframeViewer]();
                     break;
                 default:
@@ -174,8 +174,8 @@ configuration or device capabilities');
             if (this.vto) {
                 if (this.src != null) {
                     for (const value of this[$vtoModes]) {
-                        if (value === 'iframe' && IS_VYKING_VTO_CANDIDATE) {
-                            vtoMode = VTOMode.IFRAME;
+                        if (value === 'vyking-vto' && IS_VYKING_VTO_CANDIDATE) {
+                            vtoMode = VTOMode.VYKING_VTO;
                             break;
                         }
                     }
