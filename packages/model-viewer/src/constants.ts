@@ -96,3 +96,6 @@ export const IS_AR_QUICKLOOK_CANDIDATE = (() => {
         return false;
     }
 })();
+
+export const IS_VYKING_VTO_CANDIDATE = true;
+

@@ -527,8 +527,7 @@ export default class ModelViewerElementBase extends ReactiveElement {
   }
 
   get[$altDefaulted]() {
-    return (this.alt == null || this.alt === 'null') ? this[$defaultAriaLabel] :
-                                                       this.alt;
+    return (this.alt == null || this.alt === 'null') ? this[$defaultAriaLabel] : this.alt;
   }
 
   // NOTE(cdata): Although this may seem extremely redundant, it is required in

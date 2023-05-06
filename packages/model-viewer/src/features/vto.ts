@@ -16,7 +16,7 @@
 import { property } from 'lit/decorators.js';
 import { Event as ThreeEvent } from 'three';
 
-import { IS_AR_QUICKLOOK_CANDIDATE, IS_SCENEVIEWER_CANDIDATE } from '../constants.js';
+import { IS_VYKING_VTO_CANDIDATE } from '../constants.js';
 import ModelViewerElementBase, { $needsRender, $poster, $progressTracker, $renderer, $scene, $shouldAttemptPreload, $updateSource } from '../model-viewer-base.js';
 import { enumerationDeserializer } from '../styles/deserializers.js';
 import { Constructor, waitForEvent } from '../utilities.js';
@@ -69,6 +69,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
         @property({ type: String, attribute: 'vto-config' }) vtoConfig: string = '';
         @property({ type: String, attribute: 'vto-key' }) vtoKey: string = '';
+        @property({ type: String, attribute: 'vto-autocamera-width' }) vtoAutoCameraWidth: number = 960;
+        @property({ type: String, attribute: 'vto-autocamera-height' }) vtoAutoCameraHeight: number = 540;
+        @property({ type: String, attribute: 'vto-autocamera-framerate' }) vtoAutoCameraFramerate: number = 60;
 
         get canActivateVTO(): boolean {
             return this[$vtoMode] !== VTOMode.NONE;
@@ -171,11 +174,7 @@ configuration or device capabilities');
             if (this.vto) {
                 if (this.src != null) {
                     for (const value of this[$vtoModes]) {
-                        if (value === 'iframe' && IS_AR_QUICKLOOK_CANDIDATE) {
-                            vtoMode = VTOMode.IFRAME;
-                            break;
-                        }
-                        if (value === 'iframe' && IS_SCENEVIEWER_CANDIDATE) {
+                        if (value === 'iframe' && IS_VYKING_VTO_CANDIDATE) {
                             vtoMode = VTOMode.IFRAME;
                             break;
                         }
@@ -217,43 +216,35 @@ configuration or device capabilities');
         }
 
         /**
-         * Takes a URL and a title string, and attempts to launch Scene Viewer on
+         * Takes a URL and a title string, and attempts to launch VTO on
          * the current device.
          */
         [$openIframeViewer]() {
-            console.log(`VTOModelViewerElement.openIframeViewer ${self.location.toString()}`)
-            const location = self.location.toString();
-            const locationUrl = new URL(location);
+            console.log(`VTOModelViewerElement.openIframeViewer ${self.location.href}`)
+            const location = self.location.href;
             const modelUrl = new URL(this.src!, location);
             if (modelUrl.hash) modelUrl.hash = '';
             const params = new URLSearchParams(modelUrl.search);
 
-            //   locationUrl.hash = noArViewerSigil;
-
-            if (params.has('link')) {
-                const linkUrl = new URL(params.get('link')!, location);
-                params.set('link', linkUrl.toString());
-            }
-
-            console.log(`Attempting to present in VTO with iframe... ${this.src} %o`, locationUrl);
+            console.log(`Attempting to present in VTO with iframe: ${this.src}, ${location}`);
 
             const container = document.createElement('div')
             const escapeHTML = (text: string) => document.createTextNode(text)
 
             const iframe = document.createElement('iframe')
             iframe.setAttribute('seamless', 'true')
-            iframe.srcdoc = escapeHTML(this.#srcDoc()).textContent!
+            iframe.srcdoc = escapeHTML(this.#srcDoc(location)).textContent!
             iframe.referrerPolicy = 'origin'
             iframe.sandbox.add('allow-same-origin')
             iframe.sandbox.add('allow-scripts')
             iframe.sandbox.add('allow-modals')
             iframe.allow = 'camera; fullscreen;'
-            iframe.setAttribute("style", "top:0; left:0; position:fixed; height:100%; width:100%;");
+            iframe.setAttribute("style", "top:0; left:0; position:fixed; height:100%; width:100%;z-index:2000;");
             container.appendChild(iframe);
 
             const closeButton = document.createElement('button');
             closeButton.innerText = 'Close me?'
-            closeButton.setAttribute("style", "top:10%; left:0; position:fixed; height:10%; width:10%;");
+            closeButton.setAttribute("style", "top:10%; left:0; position:fixed; height:10%; width:10%;;z-index:2001");
             closeButton.addEventListener('click', () => {
                 document.body.removeChild(container)
             }, {
@@ -276,13 +267,13 @@ configuration or device capabilities');
             // }
         }
 
-        #srcDoc = () => `
+        #srcDoc = (disabledQRCodeUrl: string) => `
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Vyking Apparel Camera</title>
+    <title>Vyking Apparel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
@@ -297,8 +288,9 @@ configuration or device capabilities');
         }
         self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {}
         self.HTMLVykingApparelElement.isDisabled = isDisabled()
+        self.HTMLVykingApparelElement.disabledQRCodeUrl = '${disabledQRCodeUrl}'
     </script>
-    <script type="module" src="https://sneaker-window.vyking.io/vyking-apparel/1/vyking-apparel.js"></script>
+    <script type="module" src="https://192.168.0.20:1234/vyking-apparel.js"></script>
 
     <style>
         html,
@@ -326,24 +318,6 @@ configuration or device capabilities');
             width: 100%;
         }
 
-        @media screen and (orientation: portrait) and (min-width: 540px) {
-            #vyking-apparel-placeholder {
-                height: 640px;
-                margin-top: 45px;
-                position: relative;
-                width: 360px;
-            }
-        }
-
-        @media screen and (orientation: landscape) and (min-height: 470px) {
-            #vyking-apparel-placeholder {
-                height: 360px;
-                margin-top: 45px;
-                position: relative;
-                width: 640px;
-            }
-        }
-
         #vyking-apparel {
             border: 0px;
             height: 100%;
@@ -356,15 +330,19 @@ configuration or device capabilities');
 
 <body>
     <div id="vyking-apparel-placeholder">
-        <vyking-apparel id="vyking-apparel" autocamera autocamerawidth=960 autocameraheight=540 autocameraframerate=30
+        <vyking-apparel id="vyking-apparel"
             stats 
             onerror="alert('Error: ' + event.message)"
-            poster=${this[$poster]}
-            apparel=${this.src}
-            config=${this.vtoConfig}
-            key=${this.vtoKey}
-            alt=${this.alt}>
-            <video slot="src" style="display: none" autoplay muted playsinline></video>
+            autocamera 
+            autocamera-width=${this.vtoAutoCameraWidth}
+            autocamera-height=${this.vtoAutoCameraHeight}
+            autocamera-framerate=${this.vtoAutoCameraFramerate}
+            poster='${this[$poster]}'
+            apparel='${this.src}'
+            config='${this.vtoConfig}'
+            key='${this.vtoKey}'
+            alt='${this.alt}'>
+            <video slot="src" hidden autoplay muted playsinline></video>
             <canvas slot="canvas">Shoe Try-on</canvas>
             <div slot="advice" class="advice" alt="Point at your feet">
                 <img style="width: 100%; height: 100%" src="assets/vto/images/point_at_your_feet.png" />
