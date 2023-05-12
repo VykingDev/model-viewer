@@ -14,14 +14,22 @@
  */
 
 import { property } from 'lit/decorators.js';
-import { Event as ThreeEvent } from 'three';
 
 import { IS_VYKING_VTO_CANDIDATE } from '../constants.js';
-import ModelViewerElementBase, { $needsRender, $poster, $progressTracker, $renderer, $scene, $shouldAttemptPreload, $updateSource } from '../model-viewer-base.js';
+import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource } from '../model-viewer-base.js';
 import { enumerationDeserializer } from '../styles/deserializers.js';
 import { Constructor, waitForEvent } from '../utilities.js';
 
 let isVTOBlocked = false;
+
+export type VTOStatus =
+    'not-presenting'|'presenting'|'failed';
+
+export const VTOStatus: {[index: string]: VTOStatus} = {
+  NOT_PRESENTING: 'not-presenting',
+  PRESENTING: 'presenting',
+  FAILED: 'failed'
+};
 
 export type VTOMode = 'vyking-vto' | 'none';
 
@@ -55,6 +63,13 @@ export declare interface VTOInterface {
     vtoModes: string;
     vtoConfig: string;
     vtoKey: string;
+    vtoAutoCameraWidth: number;
+    vtoAutoCameraHeight: number;
+    vtoAutoCameraFramerate: number;
+    vtoFlipY: boolean;
+    vtoRotate: boolean;
+    vtoStats: boolean;
+    vtoDebug: boolean;
     readonly canActivateVTO: boolean;
     activateVTO(): Promise<void>;
 }
@@ -72,6 +87,10 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-autocamera-width' }) vtoAutoCameraWidth: number = 960;
         @property({ type: String, attribute: 'vto-autocamera-height' }) vtoAutoCameraHeight: number = 540;
         @property({ type: String, attribute: 'vto-autocamera-framerate' }) vtoAutoCameraFramerate: number = 60;
+        @property({ type: Boolean, attribute: 'vto-flipy' }) vtoFlipY: boolean = false;
+        @property({ type: Boolean, attribute: 'vto-rotate' }) vtoRotate: boolean = false;
+        @property({ type: Boolean, attribute: 'vto-stats' }) vtoStats: boolean = false;
+        @property({ type: Boolean, attribute: 'vto-debug' }) vtoDebug: boolean = false;
 
         get canActivateVTO(): boolean {
             return this[$vtoMode] !== VTOMode.NONE;
@@ -119,7 +138,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             super.connectedCallback();
 
             //   this[$renderer].arRenderer.addEventListener('status', this[$onVTOStatus]);
-            //   this.setAttribute('ar-status', ARStatus.NOT_PRESENTING);
+            this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
 
             //   this[$renderer].arRenderer.addEventListener(
             //       'tracking', this[$onVTOTracking]);
@@ -222,14 +241,15 @@ configuration or device capabilities');
         [$openIframeViewer]() {
             console.log(`VTOModelViewerElement.openIframeViewer ${self.location.href}`)
             const location = self.location.href;
-            const modelUrl = new URL(this.src!, location);
-            if (modelUrl.hash) modelUrl.hash = '';
-            const params = new URLSearchParams(modelUrl.search);
+            // const modelUrl = new URL(this.src!, location);
+            // if (modelUrl.hash) modelUrl.hash = '';
+            // const params = new URLSearchParams(modelUrl.search);
 
-            console.log(`Attempting to present in VTO with iframe: ${this.src}, ${location}`);
+            console.log(`Attempting to present in VTO with iframe: ${this.src}, ${location}, ${this.vtoFlipY}`);
 
-            const container = document.createElement('div')
             const escapeHTML = (text: string) => document.createTextNode(text)
+
+            const container = this.shadowRoot!.querySelector('#default-vto') as HTMLElement
 
             const iframe = document.createElement('iframe')
             iframe.setAttribute('seamless', 'true')
@@ -239,32 +259,28 @@ configuration or device capabilities');
             iframe.sandbox.add('allow-scripts')
             iframe.sandbox.add('allow-modals')
             iframe.allow = 'camera; fullscreen;'
-            iframe.setAttribute("style", "top:0; left:0; position:fixed; height:100%; width:100%;z-index:2000;");
-            container.appendChild(iframe);
+            iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; position:fixed; height:100%; width:100%;");
 
-            const closeButton = document.createElement('button');
-            closeButton.innerText = 'Close me?'
-            closeButton.setAttribute("style", "top:10%; left:0; position:fixed; height:10%; width:10%;;z-index:2001");
-            closeButton.addEventListener('click', () => {
-                document.body.removeChild(container)
-            }, {
-                once: true
-            })
-            container.appendChild(closeButton);
+            container.prepend(iframe);
+            container.classList.add('enabled')
+            this.setAttribute('vto-status', VTOStatus.PRESENTING);
 
-            document.body.appendChild(container)
+            const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
+            const onExit = () => {
+                if (exitButton != null) {
+                    exitButton.removeEventListener('click', onExit)
 
-            // if (iframe.requestFullscreen) {
-            //     iframe.requestFullscreen()
-            //         .then(() => {
-
-            //         })
-            //         .catch(cause => {
-            //             console.warn('Error while trying to present in VTO in an iframe');
-            //             console.error(cause);
-            //             document.body.removeChild(container)
-            //         })
-            // }
+                    this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
+                    exitButton.classList.remove('enabled');
+                    container.classList.remove('enabled')
+                    
+                    container.removeChild(iframe)
+                  }
+            }
+            if (exitButton != null) {
+                exitButton.classList.add('enabled');
+                exitButton.addEventListener('click', onExit);
+            }
         }
 
         #srcDoc = (disabledQRCodeUrl: string) => `
@@ -287,7 +303,7 @@ configuration or device capabilities');
             return true
         }
         self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {}
-        self.HTMLVykingApparelElement.isDisabled = isDisabled()
+        // self.HTMLVykingApparelElement.isDisabled = isDisabled()
         self.HTMLVykingApparelElement.disabledQRCodeUrl = '${disabledQRCodeUrl}'
     </script>
     <script type="module" src="https://192.168.0.20:1234/vyking-apparel.js"></script>
@@ -331,12 +347,15 @@ configuration or device capabilities');
 <body>
     <div id="vyking-apparel-placeholder">
         <vyking-apparel id="vyking-apparel"
-            stats 
+            ${this.vtoStats ? 'stats' : ''}
+            ${this.vtoDebug ? 'debug' : ''}  
             onerror="alert('Error: ' + event.message)"
             autocamera 
             autocamera-width=${this.vtoAutoCameraWidth}
             autocamera-height=${this.vtoAutoCameraHeight}
             autocamera-framerate=${this.vtoAutoCameraFramerate}
+            ${this.vtoFlipY ? 'flipy' : ''}
+            ${this.vtoRotate ? 'rotate' : ''}
             poster='${this[$poster]}'
             apparel='${this.src}'
             config='${this.vtoConfig}'

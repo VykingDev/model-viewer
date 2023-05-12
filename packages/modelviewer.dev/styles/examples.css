@@ -884,6 +884,13 @@ paper-button {
     flex-direction: column-reverse;
     background-color: #455A64;
   }
+  
+  .demo:has(model-viewer[vto-status="presenting"]) {
+    height: 100vh;
+    position: fixed;
+    width: 100vw;
+    z-index: 2000;
+  }
 
   .index {
     width: 48px;
@@ -892,6 +899,10 @@ paper-button {
 
   .sample {
     display: block;
+  }
+
+  .sample:has(model-viewer[vto-status="presenting"]) {
+    grid-template-columns: 0% 100%;
   }
 
   .content {

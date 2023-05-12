@@ -18,6 +18,7 @@ import {html, render} from 'lit';
 import CloseIcon from './assets/close-material-svg.js';
 import ControlsPrompt from './assets/controls-svg.js';
 import ARGlyph from './assets/view-in-ar-material-svg.js';
+import VTOGlyph from './assets/view-in-vto-material-svg.js';
 
 const templateResult = html`
 <style>
@@ -259,6 +260,15 @@ canvas {
   transform-origin: bottom right;
 }
 
+#default-vto {
+  width: 100%;
+  height: 100%;
+}
+
+#default-vto:not(.enabled) {
+  display: none;
+}
+
 .slot.pan-target {
   display: block;
   position: absolute;
@@ -346,7 +356,7 @@ canvas {
       <a id="default-vto-button" part="default-vto-button" class="fab"
           tabindex=4"
           aria-label="View on your body">
-        ${ARGlyph}
+        ${VTOGlyph}
       </a>
     </slot>
   </div>
@@ -377,6 +387,9 @@ canvas {
 
   <div class="slot default">
     <slot></slot>
+
+    <div id="default-vto" part="default-vto" aria-hidden="true">
+    </div>
 
     <div class="slot progress-bar">
       <slot name="progress-bar">
