@@ -41,6 +41,19 @@
   <script src="node_modules/focus-visible/dist/focus-visible.js" defer></script>
 
   <script>
+    const isDisabled = () => {
+        if (/android/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            return false
+        }
+
+        return true
+    }
+    self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {}
+    // self.HTMLVykingApparelElement.isDisabled = isDisabled()
+    self.HTMLVykingApparelElement.disabledQRCodeUrl = location.href
+  </script>
+
+  <script>
     window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) }; ga.l = +new Date;
     ga('create', 'UA-169901325-1', { 'storage': 'none' });
     ga('set', 'referrer', document.referrer.split('?')[0]);

@@ -20,15 +20,20 @@ import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource }
 import { enumerationDeserializer } from '../styles/deserializers.js';
 import { Constructor, waitForEvent } from '../utilities.js';
 
+export interface VykingApparelGlobalConfig {
+    isDisabled?: boolean
+    disabledQRCodeUrl?: string
+}
+
 let isVTOBlocked = false;
 
 export type VTOStatus =
-    'not-presenting'|'presenting'|'failed';
+    'not-presenting' | 'presenting' | 'failed';
 
-export const VTOStatus: {[index: string]: VTOStatus} = {
-  NOT_PRESENTING: 'not-presenting',
-  PRESENTING: 'presenting',
-  FAILED: 'failed'
+export const VTOStatus: { [index: string]: VTOStatus } = {
+    NOT_PRESENTING: 'not-presenting',
+    PRESENTING: 'presenting',
+    FAILED: 'failed'
 };
 
 export type VTOMode = 'vyking-vto' | 'none';
@@ -61,8 +66,8 @@ const $triggerLoad = Symbol('triggerLoad');
 export declare interface VTOInterface {
     vto: boolean;
     vtoModes: string;
-    vtoConfig: string;
-    vtoKey: string;
+    vtoConfig: string | null;
+    vtoKey: string | null;
     vtoAutoCameraWidth: number;
     vtoAutoCameraHeight: number;
     vtoAutoCameraFramerate: number;
@@ -82,8 +87,8 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-modes' })
         vtoModes: string = DEFAULT_VTO_MODES;
 
-        @property({ type: String, attribute: 'vto-config' }) vtoConfig: string = '';
-        @property({ type: String, attribute: 'vto-key' }) vtoKey: string = '';
+        @property({ type: String, attribute: 'vto-config' }) vtoConfig: string | null = null;
+        @property({ type: String, attribute: 'vto-key' }) vtoKey: string | null = null;
         @property({ type: String, attribute: 'vto-autocamera-width' }) vtoAutoCameraWidth: number = 960;
         @property({ type: String, attribute: 'vto-autocamera-height' }) vtoAutoCameraHeight: number = 540;
         @property({ type: String, attribute: 'vto-autocamera-framerate' }) vtoAutoCameraFramerate: number = 60;
@@ -240,26 +245,29 @@ configuration or device capabilities');
          */
         [$openIframeViewer]() {
             console.log(`VTOModelViewerElement.openIframeViewer ${self.location.href}`)
-            const location = self.location.href;
-            // const modelUrl = new URL(this.src!, location);
-            // if (modelUrl.hash) modelUrl.hash = '';
-            // const params = new URLSearchParams(modelUrl.search);
-
-            console.log(`Attempting to present in VTO with iframe: ${this.src}, ${location}, ${this.vtoFlipY}`);
+            console.log(`Attempting to present in VTO with iframe: ${this.src}`);
 
             const escapeHTML = (text: string) => document.createTextNode(text)
+            const vykingApparelGlobalConfigToJSString = (config: VykingApparelGlobalConfig) =>
+                'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
+                    .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
+                    .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
 
+            const HTMLVykingApparelElement: VykingApparelGlobalConfig =
+                (self as any).HTMLVykingApparelElement || {}
             const container = this.shadowRoot!.querySelector('#default-vto') as HTMLElement
 
             const iframe = document.createElement('iframe')
             iframe.setAttribute('seamless', 'true')
-            iframe.srcdoc = escapeHTML(this.#srcDoc(location)).textContent!
+            iframe.srcdoc = escapeHTML(this.#srcDoc(vykingApparelGlobalConfigToJSString(HTMLVykingApparelElement))).textContent!
             iframe.referrerPolicy = 'origin'
             iframe.sandbox.add('allow-same-origin')
             iframe.sandbox.add('allow-scripts')
             iframe.sandbox.add('allow-modals')
             iframe.allow = 'camera; fullscreen;'
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; position:fixed; height:100%; width:100%;");
+
+            console.log(`steve iframe %o`, iframe)
 
             container.prepend(iframe);
             container.classList.add('enabled')
@@ -273,9 +281,9 @@ configuration or device capabilities');
                     this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
                     exitButton.classList.remove('enabled');
                     container.classList.remove('enabled')
-                    
+
                     container.removeChild(iframe)
-                  }
+                }
             }
             if (exitButton != null) {
                 exitButton.classList.add('enabled');
@@ -283,7 +291,21 @@ configuration or device capabilities');
             }
         }
 
-        #srcDoc = (disabledQRCodeUrl: string) => `
+        #srcDoc = (config: string) => {
+            const getURL = (parentUrl: string, name: string) => {
+                console.log(`getURL: ${parentUrl}, ${name}`)
+
+                const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
+
+                const matches = parentUrl?.match(/.+\//)
+                if (matches != null && matches.length > 0 && !isUrlAbsolute(name)) {
+                    return matches[0] + name
+                } else {
+                    return name
+                }
+            }
+
+            return `
 <!DOCTYPE html>
 <html>
 
@@ -295,16 +317,7 @@ configuration or device capabilities');
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
 
     <script>
-        const isDisabled = () => {
-            if (/android/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                return false
-            }
-
-            return true
-        }
-        self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {}
-        // self.HTMLVykingApparelElement.isDisabled = isDisabled()
-        self.HTMLVykingApparelElement.disabledQRCodeUrl = '${disabledQRCodeUrl}'
+        ${config}
     </script>
     <script type="module" src="https://192.168.0.20:1234/vyking-apparel.js"></script>
 
@@ -356,11 +369,14 @@ configuration or device capabilities');
             autocamera-framerate=${this.vtoAutoCameraFramerate}
             ${this.vtoFlipY ? 'flipy' : ''}
             ${this.vtoRotate ? 'rotate' : ''}
-            poster='${this[$poster]}'
-            apparel='${this.src}'
-            config='${this.vtoConfig}'
-            key='${this.vtoKey}'
-            alt='${this.alt}'>
+            ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
+            ${!!this.src ? 'apparel="' + this.src + '"' : ''}
+            ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
+            ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
+            ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
+            ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
+            ${this.withCredentials ? 'with-credentials' : ''}
+            >
             <video slot="src" hidden autoplay muted playsinline></video>
             <canvas slot="canvas">Shoe Try-on</canvas>
             <div slot="advice" class="advice" alt="Point at your feet">
@@ -372,6 +388,7 @@ configuration or device capabilities');
 
 </html>
 `
+        }
     }
 
     return VTOModelViewerElement;
