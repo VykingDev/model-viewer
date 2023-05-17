@@ -94,6 +94,8 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-autocamera-framerate' }) vtoAutoCameraFramerate: number = 60;
         @property({ type: Boolean, attribute: 'vto-flipy' }) vtoFlipY: boolean = false;
         @property({ type: Boolean, attribute: 'vto-rotate' }) vtoRotate: boolean = false;
+        @property({ type: Boolean, attribute: 'vto-disable-roi' }) vtoDisableROI: boolean = false
+        @property({ type: Number, attribute: 'vto-lens-factor' }) vtoLensFactor: number | null = null    
         @property({ type: Boolean, attribute: 'vto-stats' }) vtoStats: boolean = false;
         @property({ type: Boolean, attribute: 'vto-debug' }) vtoDebug: boolean = false;
 
@@ -369,6 +371,8 @@ configuration or device capabilities');
             autocamera-framerate=${this.vtoAutoCameraFramerate}
             ${this.vtoFlipY ? 'flipy' : ''}
             ${this.vtoRotate ? 'rotate' : ''}
+            ${this.vtoDisableROI ? 'rotate' : ''}
+            ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
             ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
             ${!!this.src ? 'apparel="' + this.src + '"' : ''}
             ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
