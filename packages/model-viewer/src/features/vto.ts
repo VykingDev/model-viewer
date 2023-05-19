@@ -16,7 +16,7 @@
 import { property } from 'lit/decorators.js';
 
 import { IS_VYKING_VTO_CANDIDATE } from '../constants.js';
-import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource } from '../model-viewer-base.js';
+import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource, $renderer } from '../model-viewer-base.js';
 import { enumerationDeserializer } from '../styles/deserializers.js';
 import { Constructor, waitForEvent } from '../utilities.js';
 
@@ -36,21 +36,22 @@ export const VTOStatus: { [index: string]: VTOStatus } = {
     FAILED: 'failed'
 };
 
-export type VTOMode = 'vyking-vto' | 'none';
+export type VTOMode = 'vyking-vto-iframe' | 'none';
 
 const deserializeVTOModes = enumerationDeserializer<VTOMode>(
-    ['vyking-vto', 'none']);
+    ['vyking-vto-iframe', 'none']);
 
-const DEFAULT_VTO_MODES = 'vyking-vto';
+const DEFAULT_VTO_MODES = 'vyking-vto-iframe';
+const DEFAULT_VTO_URL = 'https://sneaker-window.vyking.io/vyking-apparel/1/vyking-apparel.js';
 
 const VTOMode: { [index: string]: VTOMode } = {
-    VYKING_VTO: 'vyking-vto',
+    VYKING_VTO_IFRAME: 'vyking-vto-iframe',
     NONE: 'none'
 };
 
 const $vtoButtonContainer = Symbol('vtoButtonContainer');
 export const $openIframeViewer = Symbol('openIframeViewer');
-const $canActivateVTO = Symbol('canActivateVTO');
+// const $canActivateVTO = Symbol('canActivateVTO');
 const $vtoMode = Symbol('vtoMode');
 const $vtoModes = Symbol('vtoModes');
 const $vtoAnchor = Symbol('vtoAnchor');
@@ -65,6 +66,7 @@ const $triggerLoad = Symbol('triggerLoad');
 
 export declare interface VTOInterface {
     vto: boolean;
+    vtoUrl: string;
     vtoModes: string;
     vtoConfig: string | null;
     vtoKey: string | null;
@@ -87,23 +89,47 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-modes' })
         vtoModes: string = DEFAULT_VTO_MODES;
 
-        @property({ type: String, attribute: 'vto-config' }) vtoConfig: string | null = null;
-        @property({ type: String, attribute: 'vto-key' }) vtoKey: string | null = null;
-        @property({ type: String, attribute: 'vto-autocamera-width' }) vtoAutoCameraWidth: number = 960;
-        @property({ type: String, attribute: 'vto-autocamera-height' }) vtoAutoCameraHeight: number = 540;
-        @property({ type: String, attribute: 'vto-autocamera-framerate' }) vtoAutoCameraFramerate: number = 60;
-        @property({ type: Boolean, attribute: 'vto-flipy' }) vtoFlipY: boolean = false;
-        @property({ type: Boolean, attribute: 'vto-rotate' }) vtoRotate: boolean = false;
-        @property({ type: Boolean, attribute: 'vto-disable-roi' }) vtoDisableROI: boolean = false
-        @property({ type: Number, attribute: 'vto-lens-factor' }) vtoLensFactor: number | null = null    
-        @property({ type: Boolean, attribute: 'vto-stats' }) vtoStats: boolean = false;
-        @property({ type: Boolean, attribute: 'vto-debug' }) vtoDebug: boolean = false;
+        @property({ type: String, attribute: 'vto-url' })
+        vtoUrl: string = DEFAULT_VTO_URL;
+
+        @property({ type: String, attribute: 'vto-config' })
+        vtoConfig: string | null = null;
+
+        @property({ type: String, attribute: 'vto-key' })
+        vtoKey: string | null = null;
+
+        @property({ type: String, attribute: 'vto-autocamera-width' })
+        vtoAutoCameraWidth: number = 960;
+
+        @property({ type: String, attribute: 'vto-autocamera-height' })
+        vtoAutoCameraHeight: number = 540;
+
+        @property({ type: String, attribute: 'vto-autocamera-framerate' })
+        vtoAutoCameraFramerate: number = 60;
+
+        @property({ type: Boolean, attribute: 'vto-flipy' })
+        vtoFlipY: boolean = false;
+
+        @property({ type: Boolean, attribute: 'vto-rotate' })
+        vtoRotate: boolean = false;
+
+        @property({ type: Boolean, attribute: 'vto-disable-roi' })
+        vtoDisableROI: boolean = false
+
+        @property({ type: Number, attribute: 'vto-lens-factor' })
+        vtoLensFactor: number | null = null
+
+        @property({ type: Boolean, attribute: 'vto-stats' })
+        vtoStats: boolean = false;
+
+        @property({ type: Boolean, attribute: 'vto-debug' })
+        vtoDebug: boolean = false;
 
         get canActivateVTO(): boolean {
             return this[$vtoMode] !== VTOMode.NONE;
         }
 
-        protected [$canActivateVTO]: boolean = false;
+        // protected [$canActivateVTO]: boolean = false;
 
         // TODO: Add this to the shadow root as part of this mixin's
         // implementation:
@@ -144,8 +170,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         connectedCallback() {
             super.connectedCallback();
 
-            //   this[$renderer].arRenderer.addEventListener('status', this[$onVTOStatus]);
             this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
+
+            //   this[$renderer].arRenderer.addEventListener('status', this[$onVTOStatus]);
 
             //   this[$renderer].arRenderer.addEventListener(
             //       'tracking', this[$onVTOTracking]);
@@ -200,7 +227,7 @@ configuration or device capabilities');
             if (this.vto) {
                 if (this.src != null) {
                     for (const value of this[$vtoModes]) {
-                        if (value === 'vyking-vto' && IS_VYKING_VTO_CANDIDATE) {
+                        if (value === 'vyking-vto-iframe' && IS_VYKING_VTO_CANDIDATE) {
                             vtoMode = VTOMode.VYKING_VTO;
                             break;
                         }
@@ -260,14 +287,13 @@ configuration or device capabilities');
             const container = this.shadowRoot!.querySelector('#default-vto') as HTMLElement
 
             const iframe = document.createElement('iframe')
-            iframe.setAttribute('seamless', 'true')
             iframe.srcdoc = escapeHTML(this.#srcDoc(vykingApparelGlobalConfigToJSString(HTMLVykingApparelElement))).textContent!
             iframe.referrerPolicy = 'origin'
-            iframe.sandbox.add('allow-same-origin')
-            iframe.sandbox.add('allow-scripts')
-            iframe.sandbox.add('allow-modals')
-            iframe.allow = 'camera; fullscreen;'
-            iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; position:fixed; height:100%; width:100%;");
+            iframe.allow = 'camera;'
+            // iframe.sandbox.add('allow-same-origin')
+            // iframe.sandbox.add('allow-scripts')
+            // iframe.sandbox.add('allow-modals')
+            iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
 
             console.log(`steve iframe %o`, iframe)
 
@@ -277,19 +303,19 @@ configuration or device capabilities');
 
             const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
             const onExit = () => {
-                if (exitButton != null) {
-                    exitButton.removeEventListener('click', onExit)
-
+                if (exitButton != null) {                    
                     this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
                     exitButton.classList.remove('enabled');
-                    container.classList.remove('enabled')
-
-                    container.removeChild(iframe)
                 }
+
+                container.classList.remove('enabled')
+                container.removeChild(iframe)
             }
             if (exitButton != null) {
                 exitButton.classList.add('enabled');
-                exitButton.addEventListener('click', onExit);
+                exitButton.addEventListener('click', onExit, {
+                    once: true
+                });
             }
         }
 
@@ -314,31 +340,23 @@ configuration or device capabilities');
 <head>
     <meta charset="utf-8">
     <title>Vyking Apparel</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
 
     <script>
         ${config}
+
+        // Disable pinch to zoom because it crashes iOS Safari.
+        document.addEventListener('touchmove', function (event) {
+            event.preventDefault()
+        }, { passive: false })
     </script>
-    <script type="module" src="https://192.168.0.20:1234/vyking-apparel.js"></script>
+    <script type="module" src="${this.vtoUrl}"></script>
 
     <style>
         html,
         body {
-            background-color: rgb(246, 169, 235);
-            height: 100%;
-            margin: 0px;
-            padding: 0px;
-        }
-
-        .advice {
-            display: none;
-            width: 100px;
-            pointer-events: none;
-        }
-
-        #vyking-apparel-placeholder {
             background-color: black;
             height: 100%;
             left: 0;
@@ -347,6 +365,12 @@ configuration or device capabilities');
             position: fixed;
             top: 0;
             width: 100%;
+        }
+
+        .advice {
+            display: none;
+            width: 100px;
+            pointer-events: none;
         }
 
         #vyking-apparel {
@@ -360,34 +384,32 @@ configuration or device capabilities');
 </head>
 
 <body>
-    <div id="vyking-apparel-placeholder">
-        <vyking-apparel id="vyking-apparel"
-            ${this.vtoStats ? 'stats' : ''}
-            ${this.vtoDebug ? 'debug' : ''}  
-            onerror="alert('Error: ' + event.message)"
-            autocamera 
-            autocamera-width=${this.vtoAutoCameraWidth}
-            autocamera-height=${this.vtoAutoCameraHeight}
-            autocamera-framerate=${this.vtoAutoCameraFramerate}
-            ${this.vtoFlipY ? 'flipy' : ''}
-            ${this.vtoRotate ? 'rotate' : ''}
-            ${this.vtoDisableROI ? 'rotate' : ''}
-            ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
-            ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
-            ${!!this.src ? 'apparel="' + this.src + '"' : ''}
-            ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
-            ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
-            ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
-            ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
-            ${this.withCredentials ? 'with-credentials' : ''}
-            >
-            <video slot="src" hidden autoplay muted playsinline></video>
-            <canvas slot="canvas">Shoe Try-on</canvas>
-            <div slot="advice" class="advice" alt="Point at your feet">
-                <img style="width: 100%; height: 100%" src="assets/vto/images/point_at_your_feet.png" />
-            </div>
-        </vyking-apparel>
-    </div>
+    <vyking-apparel id="vyking-apparel"
+        ${this.vtoStats ? 'stats' : ''}
+        ${this.vtoDebug ? 'debug' : ''}  
+        onerror="alert('Error: ' + event.message)"
+        autocamera 
+        autocamera-width=${this.vtoAutoCameraWidth}
+        autocamera-height=${this.vtoAutoCameraHeight}
+        autocamera-framerate=${this.vtoAutoCameraFramerate}
+        ${this.vtoFlipY ? 'flipy' : ''}
+        ${this.vtoRotate ? 'rotate' : ''}
+        ${this.vtoDisableROI ? 'rotate' : ''}
+        ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
+        ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
+        ${!!this.src ? 'apparel="' + this.src + '"' : ''}
+        ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
+        ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
+        ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
+        ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
+        ${this.withCredentials ? 'with-credentials' : ''}
+        >
+        <video slot="src" hidden autoplay muted playsinline></video>
+        <canvas slot="canvas">Virtual Try On</canvas>
+        <div slot="advice" class="advice" alt="Point at your feet">
+            <img style="width: 100%; height: 100%" src="assets/vto/images/point_at_your_feet.png" />
+        </div>
+    </vyking-apparel>
 </body>
 
 </html>
