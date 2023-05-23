@@ -73,6 +73,7 @@ export declare interface VTOInterface {
     vtoAutoCameraWidth: number;
     vtoAutoCameraHeight: number;
     vtoAutoCameraFramerate: number;
+    vtoAdvice: string | null;
     vtoFlipY: boolean;
     vtoRotate: boolean;
     vtoStats: boolean;
@@ -106,6 +107,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
         @property({ type: String, attribute: 'vto-autocamera-framerate' })
         vtoAutoCameraFramerate: number = 60;
+
+        @property({ type: String, attribute: 'vto-advice' })
+        vtoAdvice: string | null = null;
 
         @property({ type: Boolean, attribute: 'vto-flipy' })
         vtoFlipY: boolean = false;
@@ -397,6 +401,7 @@ configuration or device capabilities');
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
         ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
+        ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
         ${!!this.src ? 'apparel="' + this.src + '"' : ''}
         ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
@@ -406,9 +411,6 @@ configuration or device capabilities');
         >
         <video slot="src" hidden autoplay muted playsinline></video>
         <canvas slot="canvas">Virtual Try On</canvas>
-        <div slot="advice" class="advice" alt="Point at your feet">
-            <img style="width: 100%; height: 100%" src="assets/vto/images/point_at_your_feet.png" />
-        </div>
     </vyking-apparel>
 </body>
 
