@@ -46,6 +46,8 @@ const $status = Symbol('status');
 const $onFocus = Symbol('onFocus');
 const $onBlur = Symbol('onBlur');
 
+export const $vykingSrc = Symbol('vykingSrc');
+
 export const $updateSize = Symbol('updateSize');
 export const $intersectionObserver = Symbol('intersectionObserver');
 export const $isElementInViewport = Symbol('isElementInViewport');
@@ -185,6 +187,8 @@ export default class ModelViewerElementBase extends ReactiveElement {
    */
   @property({type: Boolean, attribute: 'generate-schema'})
   generateSchema = false;
+
+  protected[$vykingSrc]: string | null = null;
 
   protected[$isElementInViewport] = false;
   protected[$loaded] = false;

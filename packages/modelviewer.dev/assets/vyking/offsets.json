@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "1.1",
+  "date_time": "2020-05-26 12:10:44.984",
+  "footLeft": {
+    "apparel": [
+      {
+        "name": "shoe",
+        "glb_uri": "model_l_encrypted.glb",
+        "usdz_uri": "model_l.usdz",
+        "scalingFactor": 1,
+        "hidden": false,
+        "opacity": 1,
+        "quaternion": [
+          -0.0072112764964927375,
+          -0.6968418822710105,
+          -0.007421436653235083,
+          0.7171501313409128
+        ],
+        "translation": [
+          0.022546756712522986,
+          -0.03818618804820578,
+          -0.12858766327383606
+        ],
+        "rotation": [
+          -0.6242237265745325,
+          -1.5353955722548591,
+          -0.6245209844842974
+        ],
+        "scale": [
+          0.9839218235374911,
+          0.9839218235374911,
+          0.9839218235374911
+        ],
+        "customShaders": [
+          {
+            "type": "CubeMap",
+            "materialName": "SnakeBody",
+            "textures": "https://threejs.org/examples/textures/cube/SwedishRoyalCastle/",
+            "textureFormat": "jpg",
+            "shaderLanguage": "webgl2",
+            "vertexShader": "shinyVertexShader.glsl",
+            "fragmentShader": "shinyFragmentShader.glsl"
+          }
+        ]
+      }
+    ],
+    "occluders": [
+      {
+        "name": "plane",
+        "mask": "Trousers",
+        "glb_uri": "plane_occ_l.glb",
+        "usdz_uri": "plane_occ_l.usdz",
+        "scalingFactor": 1,
+        "hidden": true,
+        "opacity": 1,
+        "quaternion": [
+          -0.4312356798893706,
+          0.5656897098374587,
+          0.4562815824214256,
+          0.5346382497702198
+        ],
+        "translation": [
+          -0.10947311812283629,
+          0.16334407469939172,
+          0.0051784591130954565
+        ],
+        "rotation": [
+          -1.5830106558911328,
+          0.2129548455847015,
+          1.6285272277023426
+        ],
+        "scale": [
+          0.7754951758214373,
+          0.7754951758214375,
+          0.7754951758214376
+        ]
+      },
+      {
+        "name": "leg",
+        "mask": "LegAndTrousers",
+        "glb_uri": "leg_occ_l.glb",
+        "usdz_uri": "leg_occ_l.usdz",
+        "scalingFactor": 1,
+        "hidden": false,
+        "opacity": 1,
+        "quaternion": [
+          0.0006401590310908013,
+          0.6976792570463873,
+          -0.0005711197429330399,
+          0.716409741911607
+        ],
+        "translation": [
+          -0.05394689446945646,
+          0.06199186650889054,
+          0.011118848871783979
+        ],
+        "rotation": [
+          0.06462774075085094,
+          1.5442513104198603,
+          -0.0645300958527522
+        ],
+        "scale": [
+          0.762101440902701,
+          0.8219550401074651,
+          1.1245966502965725
+        ]
+      },
+      {
+        "name": "ankle",
+        "mask": "FootLegAndTrousers",
+        "glb_uri": "ankle_occ_l.glb",
+        "usdz_uri": "ankle_occ_l.usdz",
+        "scalingFactor": 1,
+        "hidden": false,
+        "opacity": 1,
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          -0.07771562076155107,
+          0.1409069127369499,
+          0.009767889811483231
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          2.6022398437495853,
+          3.0726329228301794,
+          1.9128089495901155
+        ]
+      }
+    ]
+  },
+  "footRight": {
+    "apparel": [
+      {
+        "name": "shoe",
+        "glb_uri": "animated.glb",
+        "usdz_uri": "model_l.usdz",
+        "scalingFactor": 1,
+        "translation": [
+          -0.022546756712522986,
+          -0.03818618804820578,
+          -0.12858766327383606
+        ],
+        "scale": [
+          -0.9839218235374911,
+          0.9839218235374911,
+          0.9839218235374911
+        ],
+        "rotation": [
+          -0.6242237265745325,
+          1.5353955722548591,
+          0.6245209844842974
+        ],
+        "quaternion": [
+          -0.0072112764964927375,
+          0.6968418822710105,
+          0.007421436653235083,
+          0.7171501313409128
+        ],
+        "hidden": false,
+        "UVAnimations": [
+          {
+            "materialName": "SnakeBody",
+            "speedX": 0.1,
+            "speedY": 0.5
+          }
+        ]
+      }
+    ],
+    "occluders": [
+      {
+        "name": "plane",
+        "mask": "Trousers",
+        "glb_uri": "plane_occ_l.glb",
+        "usdz_uri": "plane_occ_l.usdz",
+        "scalingFactor": 1,
+        "translation": [
+          -0.10947311812283629,
+          0.16334407469939172,
+          0.0051784591130954565
+        ],
+        "scale": [
+          0.7754951758214373,
+          0.7754951758214375,
+          0.7754951758214376
+        ],
+        "rotation": [
+          -1.5830106558911328,
+          0.2129548455847015,
+          1.6285272277023426
+        ],
+        "quaternion": [
+          -0.4312356798893706,
+          0.5656897098374587,
+          0.4562815824214256,
+          0.5346382497702198
+        ],
+        "hidden": true
+      },
+      {
+        "name": "leg",
+        "mask": "LegAndTrousers",
+        "glb_uri": "leg_occ_l.glb",
+        "usdz_uri": "leg_occ_l.usdz",
+        "scalingFactor": 1,
+        "translation": [
+          -0.05394689446945646,
+          0.06199186650889054,
+          0.011118848871783979
+        ],
+        "scale": [
+          0.762101440902701,
+          0.8219550401074651,
+          1.1245966502965725
+        ],
+        "rotation": [
+          0.06462774075085094,
+          1.5442513104198603,
+          -0.0645300958527522
+        ],
+        "quaternion": [
+          0.0006401590310908013,
+          0.6976792570463873,
+          -0.0005711197429330399,
+          0.716409741911607
+        ],
+        "hidden": false
+      },
+      {
+        "name": "ankle",
+        "mask": "FootLegAndTrousers",
+        "glb_uri": "ankle_occ_l.glb",
+        "usdz_uri": "ankle_occ_l.usdz",
+        "scalingFactor": 1,
+        "translation": [
+          -0.07771562076155107,
+          0.1409069127369499,
+          0.009767889811483231
+        ],
+        "scale": [
+          2.6022398437495853,
+          3.0726329228301794,
+          1.9128089495901155
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "hidden": false
+      }
+    ]
+  },
+  "left_foot": false,
+  "right_foot": true,
+  "both_feet": false,
+  "icon_uri": "shoeIcon.png",
+  "shortShoeDescription": "Air Jordan 1",
+  "longShoeDescription": "Retro Turbo Green",
+  "WebDirectionalLight": {
+    "colour": "0xff00ff",
+    "intensity": 0.0
+  },
+  "WebAmbientLight": {
+    "colour": "0x00ff00",
+    "intensity": 1.0
+  },
+  "environment-image": "neutral.hdr",
+  "exposure": 1.0,
+  "initial_camera_position": {
+      "yaw": 0.0,
+      "pitch": 75.0,
+      "Distance": null
+  },
+  "shadow": {
+      "shadow_plane": true,
+      "shadowIntensity": 1.0,
+      "shadowSoftness": 1.0
+  },
+  "play_inbuilt_animation": true,
+  "rotate": {
+      "auto-rotate": false,
+      "rotation-per-second": "30deg"
+  }
+}

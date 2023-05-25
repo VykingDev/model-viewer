@@ -51,6 +51,17 @@
     self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {}
     // self.HTMLVykingApparelElement.isDisabled = isDisabled()
     self.HTMLVykingApparelElement.disabledQRCodeUrl = location.href
+
+    // customElements.whenDefined('model-viewer')
+    //   .then(() => {
+    //     console.log(`steve model-viewer defined`)
+    //     const modelViewer = document.getElementsByTagName('model-viewer')
+    //     if (modelViewer[0] != null) {
+    //       console.log(`steve model-viewer set src`)
+
+    //       modelViewer[0].vykingSrc = "https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/offsets.json"
+    //     }
+    //   })
   </script>
 
   <script>
@@ -92,15 +103,23 @@
                   src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.0.1/model-viewer.min.js"></script>
 
                 <!-- Use it like any other HTML element -->
+                <!-- 
+                vyking-src="assets/vyking/offsets.json"
+                vyking-src="https://sneaker-window.vyking.io/vyking-assets/customer/vyking-io/adidas_GY1121/offsets.json"
+                vyking-src="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/offsets.json"
+                vyking-src="https://sneaker-window.vyking.io/vyking-assets/customer/vyking-io/yeezy_boost_700_carbon_blue/offsets.json"
+                environment-image="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/envMap.jpg"
+                shadow-intensity="1" 
+                src="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/model_l.glb"
+                -->
                 <model-viewer alt="Yeezy Boost"
-                  src="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/offsets.json"
+                  vyking-src="assets/vyking/offsets.json"
                   ar
                   vto vto-stats vto-url="https://192.168.0.20:1234/vyking-apparel.js" vto-config="assets/vto/config/modeld.foot.bin" vto-key="io.vyking"
                   vto-autocamera-width=960 vto-autocamera-height=540
                   vto-advice="assets/vto/images/point_at_your_feet.png"
-                  environment-image="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/envMap.jpg"
                   poster="https://vykingsneakerkitnative.s3.amazonaws.com/stephanTest/LV-1A9H65/shoeIcon.png"
-                  shadow-intensity="1" camera-controls touch-action="pan-y">
+                  camera-controls touch-action="pan-y">
                 </model-viewer>
               </template>
             </example-snippet>

@@ -1,22 +1,13 @@
-/* @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the 'License');
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * @license
+ * Copyright (c) 2023. Vyking.io. All rights reserved.
+ * =============================================================================
  */
 
 import { property } from 'lit/decorators.js';
 
 import { IS_VYKING_VTO_CANDIDATE } from '../constants.js';
-import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource, $renderer } from '../model-viewer-base.js';
+import ModelViewerElementBase, { $poster, $shouldAttemptPreload, $updateSource, $renderer, $vykingSrc, $scene } from '../model-viewer-base.js';
 import { enumerationDeserializer } from '../styles/deserializers.js';
 import { Constructor, waitForEvent } from '../utilities.js';
 
@@ -130,10 +121,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         vtoDebug: boolean = false;
 
         get canActivateVTO(): boolean {
-            return this[$vtoMode] !== VTOMode.NONE;
+            console.log(`steve ${this[$vtoMode]} ${this[$vykingSrc]}`)
+            return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null;
         }
-
-        // protected [$canActivateVTO]: boolean = false;
 
         // TODO: Add this to the shadow root as part of this mixin's
         // implementation:
@@ -196,16 +186,16 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         }
 
         update(changedProperties: Map<string, any>) {
-            super.update(changedProperties);
+            console.log(`VTOModelViewerElement changedProperties %o`, changedProperties)
 
-            console.log(`VTOModelViewerElement %o`, changedProperties)
+            super.update(changedProperties);
 
             if (changedProperties.has('vtoModes')) {
                 this[$vtoModes] = deserializeVTOModes(this.vtoModes);
             }
 
             if (changedProperties.has('vto') || changedProperties.has('vtoModes') ||
-                changedProperties.has('src')) {
+                changedProperties.has('vyking-src')) {
                 this[$selectVTOMode]();
             }
         }
@@ -229,7 +219,7 @@ configuration or device capabilities');
 
             let vtoMode = VTOMode.NONE;
             if (this.vto) {
-                if (this.src != null) {
+                if (this[$vykingSrc] != null) {
                     for (const value of this[$vtoModes]) {
                         if (value === 'vyking-vto-iframe' && IS_VYKING_VTO_CANDIDATE) {
                             vtoMode = VTOMode.VYKING_VTO;
@@ -249,28 +239,22 @@ configuration or device capabilities');
                 this[$vtoButtonContainer].removeEventListener(
                     'click', this[$onVTOButtonContainerClick]);
                 this[$vtoButtonContainer].classList.remove('enabled');
-
-                // // If AR went from working to not, notify the element.
-                // const status = ARStatus.FAILED;
-                // this.setAttribute('ar-status', status);
-                // this.dispatchEvent(
-                //     new CustomEvent<VTOStatusDetails>('ar-status', {detail: {status}}));
             }
             this[$vtoMode] = vtoMode;
         }
 
-        async[$triggerLoad]() {
-            if (!this.loaded) {
-                this[$preload] = true;
-                this[$updateSource]();
-                await waitForEvent(this, 'load');
-                this[$preload] = false;
-            }
-        }
+        // async[$triggerLoad]() {
+        //     if (!this.loaded) {
+        //         this[$preload] = true;
+        //         this[$updateSource]();
+        //         await waitForEvent(this, 'load');
+        //         this[$preload] = false;
+        //     }
+        // }
 
-        [$shouldAttemptPreload](): boolean {
-            return super[$shouldAttemptPreload]() || this[$preload];
-        }
+        // [$shouldAttemptPreload](): boolean {
+        //     return super[$shouldAttemptPreload]() || this[$preload];
+        // }
 
         /**
          * Takes a URL and a title string, and attempts to launch VTO on
@@ -396,13 +380,14 @@ configuration or device capabilities');
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
         autocamera-framerate=${this.vtoAutoCameraFramerate}
+        exposure=${this[$renderer].threeRenderer.toneMappingExposure}
         ${this.vtoFlipY ? 'flipy' : ''}
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
-        ${this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
+        ${!!this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
         ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
-        ${!!this.src ? 'apparel="' + this.src + '"' : ''}
+        ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
         ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
         ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
