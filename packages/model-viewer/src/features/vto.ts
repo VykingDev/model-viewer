@@ -230,8 +230,6 @@ configuration or device capabilities');
             }
 
             if (vtoMode !== VTOMode.NONE) {
-                console.log(`VTOModelViewerElement.selectVTOMode add click event`)
-
                 this[$vtoButtonContainer].classList.add('enabled');
                 this[$vtoButtonContainer].addEventListener(
                     'click', this[$onVTOButtonContainerClick]);
@@ -277,21 +275,25 @@ configuration or device capabilities');
             const iframe = document.createElement('iframe')
             iframe.srcdoc = escapeHTML(this.#srcDoc(vykingApparelGlobalConfigToJSString(HTMLVykingApparelElement))).textContent!
             iframe.referrerPolicy = 'origin'
-            iframe.allow = 'camera;'
+            iframe.allow = 'camera;fullscreen;'
             // iframe.sandbox.add('allow-same-origin')
             // iframe.sandbox.add('allow-scripts')
             // iframe.sandbox.add('allow-modals')
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
 
-            console.log(`steve iframe %o`, iframe)
+            console.log(`steve iframe ${iframe.requestFullscreen} %o`, iframe)
 
             container.prepend(iframe);
             container.classList.add('enabled')
             this.setAttribute('vto-status', VTOStatus.PRESENTING);
 
+            // if (iframe.requestFullscreen) {
+            //     iframe.requestFullscreen();
+            // }
+
             const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
             const onExit = () => {
-                if (exitButton != null) {                    
+                if (exitButton != null) {
                     this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
                     exitButton.classList.remove('enabled');
                 }
