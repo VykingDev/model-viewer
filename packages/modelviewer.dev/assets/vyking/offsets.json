@@ -279,21 +279,21 @@
     "colour": "0x00ff00",
     "intensity": 1.0
   },
-  "environment-image": "neutral.hdr",
-  "exposure": 1.0,
-  "initial_camera_position": {
-      "yaw": 0.0,
-      "pitch": 75.0,
-      "Distance": null
-  },
-  "shadow": {
-      "shadow_plane": true,
-      "shadowIntensity": 1.0,
+  "viewerAttributes": {
+    "environmentImage": "neutral.hdr",
+    "exposure": 0.8,
+    "initialCameraPosition": {
+      "yaw": "42.0deg",
+      "pitch": "90.0deg"
+    },
+    "shadow": {
+      "shadowIntensity": 5.0,
       "shadowSoftness": 1.0
-  },
-  "play_inbuilt_animation": true,
-  "rotate": {
-      "auto-rotate": false,
-      "rotation-per-second": "30deg"
+    },
+    "playInbuiltAnimation": true,
+    "rotate": {
+      "autoRotate": true,
+      "rotationPerSecond": "30deg"
+    }
   }
 }
