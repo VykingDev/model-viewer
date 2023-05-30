@@ -57,6 +57,70 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                 const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
                 const toResourceUrl = (url: string, resourcePath: string) => isUrlAbsolute(url) ? url : resourcePath + url
 
+                const loadViewerAttributes = (json: any): void => {
+                    if (!this.hasAttribute('environment-image')) {
+                        const prop = json['environmentImage']
+                        if (prop != null) {
+                            if (prop === 'neutral' || prop === 'legacy') {
+                                this.setAttribute('environment-image', prop)
+                            } else {
+                                this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
+                                this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
+                            }
+                        }
+                    }
+
+                    if (!this.hasAttribute('exposure')) {
+                        const prop = json['exposure']
+                        if (prop != null) {
+                            this.setAttribute('exposure', prop)
+                        }
+                    }
+
+                    if (!this.hasAttribute('shadow-intensity')) {
+                        const prop = json['shadow']?.shadowIntensity
+                        if (prop != null) {
+                            this.setAttribute('shadow-intensity', prop)
+                        }
+                    }
+                    if (!this.hasAttribute('shadow-softness')) {
+                        const prop = json['shadow']?.shadowSoftness
+                        if (prop != null) {
+                            this.setAttribute('shadow-softness', prop)
+                        }
+                    }
+
+                    if (!this.hasAttribute('autoplay')) {
+                        const prop = json['playInbuiltAnimation']
+                        if (!!prop) {
+                            this.setAttribute('autoplay', '')
+                        }
+                    }
+
+                    if (!this.hasAttribute('auto-rotate')) {
+                        const prop = json['rotate']?.autoRotate
+                        if (!!prop) {
+                            this.setAttribute('auto-rotate', '')
+                        }
+                    }
+
+                    if (!this.hasAttribute('rotation-per-second')) {
+                        const prop = json['rotate']?.rotationPerSecond
+                        if (prop != null) {
+                            this.setAttribute('rotation-per-second', prop)
+                        }
+                    }
+
+                    if (!this.hasAttribute('camera-orbit')) {
+                        const prop = json['initialCameraPosition']
+                        if (prop != null) {
+                            const yaw = prop.yaw ?? "auto"
+                            const pitch = prop.pitch ?? "auto"
+                            const distance = prop.dist ?? "auto"
+                            this.setAttribute('camera-orbit', `${yaw} ${pitch} ${distance}`)
+                        }
+                    }
+                }
                 try {
                     if (typeof value === 'string') {
                         const json = JSON.parse(value)
@@ -84,52 +148,17 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                             }
                         }
 
+                        const prop = json['viewerAttributes']
+                        if (prop != null) {
+                            loadViewerAttributes(prop)
+                        }
+
+                        // If calling loadViewerAttributes did not define the 'environment-image' attribute
+                        // use the legacy 'environmentMap' property, if its defined.
                         if (!this.hasAttribute('environment-image')) {
-                            const prop = json['environment-image'] ?? json['environmentMap']
+                            const prop = json['environmentMap']
                             if (prop != null) {
                                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
-                                // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
-                            }
-                        }
-
-                        if (!this.hasAttribute('exposure')) {
-                            const prop = json['exposure']
-                            if (prop != null) {
-                                this.setAttribute('exposure', prop)
-                            }
-                        }
-
-                        if (!this.hasAttribute('shadow-intensity')) {
-                            const prop = json['shadow']?.shadowIntensity
-                            if (prop != null) {
-                                this.setAttribute('shadow-intensity', prop)
-                            }
-                        }
-                        if (!this.hasAttribute('shadow-softness')) {
-                            const prop = json['shadow']?.shadowSoftness
-                            if (prop != null) {
-                                this.setAttribute('shadow-softness', prop)
-                            }
-                        }
-
-                        if (!this.hasAttribute('autoplay')) {
-                            const prop = json['play_inbuilt_animation']
-                            if (!!prop) {
-                                this.setAttribute('autoplay', '')
-                            }
-                        }
-
-                        if (!this.hasAttribute('auto-rotate')) {
-                            const prop = json['rotate']?.['auto-rotate']
-                            if (!!prop) {
-                                this.setAttribute('auto-rotate', '')
-                            }
-                        }
-
-                        if (!this.hasAttribute('rotation-per-second')) {
-                            const prop = json['rotate']?.['rotation-per-second']
-                            if (prop != null) {
-                                this.setAttribute('rotation-per-second', prop)
                             }
                         }
                     }
