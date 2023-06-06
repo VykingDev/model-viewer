@@ -121,7 +121,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         vtoDebug: boolean = false;
 
         get canActivateVTO(): boolean {
-            console.log(`steve ${this[$vtoMode]} ${this[$vykingSrc]}`)
+            // console.log(`${this[$vtoMode]} ${this[$vykingSrc]}`)
             return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null;
         }
 
@@ -186,7 +186,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         }
 
         update(changedProperties: Map<string, any>) {
-            console.log(`VTOModelViewerElement changedProperties %o`, changedProperties)
+            // console.log(`VTOModelViewerElement changedProperties %o`, changedProperties)
 
             super.update(changedProperties);
 
@@ -201,7 +201,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         }
 
         async activateVTO() {
-            console.log(`VTOModelViewerElement.activateVTO`)
+            // console.log(`VTOModelViewerElement.activateVTO`)
             switch (this[$vtoMode]) {
                 case VTOMode.VYKING_VTO:
                     this[$openIframeViewer]();
@@ -215,7 +215,7 @@ configuration or device capabilities');
         }
 
         async[$selectVTOMode]() {
-            console.log(`VTOModelViewerElement.selectVTOMode ${this.vto}`)
+            // console.log(`VTOModelViewerElement.selectVTOMode ${this.vto}`)
 
             let vtoMode = VTOMode.NONE;
             if (this.vto) {
@@ -281,12 +281,13 @@ configuration or device capabilities');
             // iframe.sandbox.add('allow-modals')
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
 
-            console.log(`steve iframe ${iframe.requestFullscreen} %o`, iframe)
+            console.log(`iframe %o`, iframe)
 
             container.prepend(iframe);
             container.classList.add('enabled')
             this.setAttribute('vto-status', VTOStatus.PRESENTING);
 
+            // This doesn't work on iphone safari
             // if (iframe.requestFullscreen) {
             //     iframe.requestFullscreen();
             // }
@@ -311,7 +312,7 @@ configuration or device capabilities');
 
         #srcDoc = (config: string) => {
             const getURL = (parentUrl: string, name: string) => {
-                console.log(`getURL: ${parentUrl}, ${name}`)
+                // console.log(`getURL: ${parentUrl}, ${name}`)
 
                 const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
 

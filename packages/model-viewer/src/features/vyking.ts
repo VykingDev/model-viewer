@@ -36,6 +36,21 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
+        #internetLoggingProperties = {
+            isSuspended: false,
+            loggingEnabled: true,
+            loggingFailureThreshold: 25,
+            loggingUrl: 'https://vykingstatseu.net/cgi-bin/logpostdata.cgi',
+            initialiseCount: 0,
+            startCount: 0,
+            modelViewer3Dmodel: 0,
+            statsLoggingFailureCount: 0,
+            shortShoeDescription: '',
+            longShoeDescription: '',
+            assetId: '',
+            organizationId: ''
+        }
+
         #loadFromOffsetsJson = (url: string, onError?: ((event: ErrorEvent) => void) | undefined) => {
             const _onError = function (e: ErrorEvent) {
                 if (onError) {
@@ -121,9 +136,108 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                         }
                     }
                 }
+
+                const logStatsToAmazon = async (type: string) => {
+                    if (!this.#internetLoggingProperties.loggingEnabled) { return }
+                    if (this.#internetLoggingProperties.loggingUrl === '') { return }
+
+                    const version = "1.0"
+                    const fqdn = window.self === window.top
+                        ? new URL(document.location.href).hostname
+                        : document.referrer !== '' // The spec says this should be set, but for firefox it's not!!!!
+                            ? new URL(document.referrer).hostname
+                            : new URL(window.top!.location.href).hostname // Best guess at an alternative
+                    const reversedFQDN = (fqdn: string) => fqdn.split('.').reverse().join('.')
+                    const encodeURIComponent = (x: string) => x
+                    const sumString = (str: string) => {
+                        let sum = 0
+                        for (let i = 0; i < str.length; i++) {
+                            sum += str.charCodeAt(i)
+                        }
+                        return sum
+                    }
+
+                    let count = 0
+                    switch (type) {
+                        case 'modelViewer3Dmodel':
+                            count = ++this.#internetLoggingProperties.modelViewer3Dmodel
+                            break
+                    }
+
+                    try {
+                        const logMessage = 'web'
+                            + `|${encodeURIComponent(version)}` // a version
+                            + `|${encodeURIComponent('')}` // client id
+                            + `|${encodeURIComponent(reversedFQDN(fqdn))}` // domain
+                            + `|${encodeURIComponent(type)}` // request type 
+                            + `|${encodeURIComponent(count.toString())}` // a count per request type
+                            + `|${encodeURIComponent(new Date().toISOString())}` // data and time
+                            + `|${encodeURIComponent(navigator.language)}` // locale
+                            + `|${encodeURIComponent(navigator.userAgent)}` // browser type and version
+                            + `|${encodeURIComponent(this.#internetLoggingProperties.shortShoeDescription.replace(/|/g, ' '))}^^${encodeURIComponent(this.#internetLoggingProperties.longShoeDescription.replace(/|/g, ' '))}` // asset names
+                            + `|${encodeURIComponent(this.#internetLoggingProperties.organizationId)}`
+                            + `|${encodeURIComponent(this.#internetLoggingProperties.assetId)}`
+
+                        const logMessageSum = sumString(logMessage)
+                        console.info(`logStatsToAmazon: ${logMessage}, ${logMessageSum}`)
+
+                        // const response = await fetch(this.#internetLoggingProperties.loggingUrl, {
+                        //     method: 'POST',
+                        //     credentials: 'omit',
+                        //     cache: 'no-cache',
+                        //     headers: {
+                        //         'Content-Type': 'multipart/form-data',//'text/plain',
+                        //     },
+                        //     body: logMessage
+                        // })
+                        // if (!response.ok) { throw new Error(`${response.status}`) }
+                        // response.headers.forEach((value, key) => {
+                        //     switch (key) {
+                        //         case "vykvalue":
+                        //             this.#internetLoggingProperties.statsLoggingFailureCount = (parseInt(value, 10) === logMessageSum) ? 0 : this.#internetLoggingProperties.statsLoggingFailureCount + 1
+                        //             if (this.#internetLoggingProperties.statsLoggingFailureCount > 0) {
+                        //                 console.error(`logStatsToAmazon failed ${this.#internetLoggingProperties.statsLoggingFailureCount}.`)
+                        //             }
+                        //             break
+                        //         case "suspend":
+                        //             console.error(`logStatsToAmazon suspending service.`)
+                        //             this.#internetLoggingProperties.isSuspended = true
+                        //             break
+                        //     }
+                        // })
+                    } catch (cause) {
+                        console.error(`logStatsToAmazon: location.href "${fqdn}"`)
+                        console.error(`logStatsToAmazon: ${cause}`)
+                    }
+                }
+
+                const loadStatsProperties = (json: any): void => {
+                    let prop = json['shortShoeDescription']
+                    if (prop != null) {
+                        this.#internetLoggingProperties.shortShoeDescription = prop
+                    }
+
+                    prop = json['longShoeDescription']
+                    if (prop != null) {
+                        this.#internetLoggingProperties.longShoeDescription = prop
+                    }
+
+                    prop = json['assetId']
+                    if (prop != null) {
+                        this.#internetLoggingProperties.assetId = prop
+                    }
+
+                    prop = json['organizationId']
+                    if (prop != null) {
+                        this.#internetLoggingProperties.organizationId = prop
+                    }
+                }
+
                 try {
                     if (typeof value === 'string') {
                         const json = JSON.parse(value)
+
+                        loadStatsProperties(json)
 
                         if (!this.hasAttribute('src')) {
                             const bodyPart = json.schemaVersion === "1.1"
@@ -139,9 +253,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                                     ? json.object
                                                     : null
                                     : null
-                            console.log(`VykingModelViewerElement load %o`, bodyPart)
                             const prop = bodyPart?.apparel[0]?.glb_uri
-                            console.log(`VykingModelViewerElement load %o`, prop)
 
                             if (prop != null) {
                                 this.setAttribute('src', toResourceUrl(prop, resourcePath))
@@ -161,6 +273,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
                             }
                         }
+
+                        logStatsToAmazon('modelViewer3Dmodel')
                     }
                 } catch (e: any) {
                     _onError(e);
