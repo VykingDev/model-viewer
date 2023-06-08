@@ -80,7 +80,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                 this.setAttribute('environment-image', prop)
                             } else {
                                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
-                                this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
+                                // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
                             }
                         }
                     }
