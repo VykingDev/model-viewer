@@ -383,7 +383,7 @@ configuration or device capabilities');
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
         autocamera-framerate=${this.vtoAutoCameraFramerate}
-        exposure=${this[$renderer].threeRenderer.toneMappingExposure}
+        default-exposure=${this[$renderer].threeRenderer.toneMappingExposure}
         ${this.vtoFlipY ? 'flipy' : ''}
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
@@ -391,7 +391,7 @@ configuration or device capabilities');
         ${!!this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
         ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
-        ${!!this.getAttribute('environment-image') ? 'environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
+        ${!!this.getAttribute('environment-image') ? 'default-environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
         ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
         ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
