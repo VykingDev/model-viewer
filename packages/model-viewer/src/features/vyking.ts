@@ -24,6 +24,12 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
     ModelViewerElement: T): Constructor<VykingInterface> & T => {
 
     class VykingModelViewerElement extends ModelViewerElement {
+        constructor(...args: Array<any>) {
+            super(args)
+
+            console.info(`VykingModelViewerElement version: ${this.#VykingMixinVersion}`)    
+        }
+
         @property({ type: String, attribute: 'vyking-src' }) set vykingSrc(newValue: string | null) {
             this[$vykingSrc] = newValue
             if (newValue != null) {
@@ -36,6 +42,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
+        #VykingMixinVersion = "3.1.1-1.1"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -51,6 +58,14 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             organizationId: ''
         }
 
+        /**
+         * Set or remove appropriate attributes based on contents of the specified offsets.json file. 
+         * NOTE: 
+         * If we do not remove the appropriate attributes for properties missing in the offsets.json file then the rendering will
+         * be dependent upon the values set by a previous offsets.json file.
+         * @param url Offsets.json file to load from
+         * @param onError 
+         */
         #loadFromOffsetsJson = (url: string, onError?: ((event: ErrorEvent) => void) | undefined) => {
             const _onError = function (e: ErrorEvent) {
                 if (onError) {
@@ -72,8 +87,72 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                 const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
                 const toResourceUrl = (url: string, resourcePath: string) => isUrlAbsolute(url) ? url : resourcePath + url
 
+                // const loadViewerAttributes = (json: any): void => {
+                //     if (!this.hasAttribute('environment-image')) {
+                //         const prop = json['environmentImage']
+                //         if (prop != null) {
+                //             if (prop === 'neutral' || prop === 'legacy') {
+                //                 this.setAttribute('environment-image', prop)
+                //             } else {
+                //                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
+                //                 // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
+                //             }
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('exposure')) {
+                //         const prop = json['exposure']
+                //         if (prop != null) {
+                //             this.setAttribute('exposure', prop)
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('shadow-intensity')) {
+                //         const prop = json['shadow']?.shadowIntensity
+                //         if (prop != null) {
+                //             this.setAttribute('shadow-intensity', prop)
+                //         }
+                //     }
+                //     if (!this.hasAttribute('shadow-softness')) {
+                //         const prop = json['shadow']?.shadowSoftness
+                //         if (prop != null) {
+                //             this.setAttribute('shadow-softness', prop)
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('autoplay')) {
+                //         const prop = json['playInbuiltAnimation']
+                //         if (!!prop) {
+                //             this.setAttribute('autoplay', '')
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('auto-rotate')) {
+                //         const prop = json['rotate']?.autoRotate
+                //         if (!!prop) {
+                //             this.setAttribute('auto-rotate', '')
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('rotation-per-second')) {
+                //         const prop = json['rotate']?.rotationPerSecond
+                //         if (prop != null) {
+                //             this.setAttribute('rotation-per-second', prop)
+                //         }
+                //     }
+
+                //     if (!this.hasAttribute('camera-orbit')) {
+                //         const prop = json['initialCameraPosition']
+                //         if (prop != null) {
+                //             const yaw = prop.yaw ?? "auto"
+                //             const pitch = prop.pitch ?? "auto"
+                //             const distance = prop.dist ?? "auto"
+                //             this.setAttribute('camera-orbit', `${yaw} ${pitch} ${distance}`)
+                //         }
+                //     }
+                // }
                 const loadViewerAttributes = (json: any): void => {
-                    if (!this.hasAttribute('environment-image')) {
+                    {
                         const prop = json['environmentImage']
                         if (prop != null) {
                             if (prop === 'neutral' || prop === 'legacy') {
@@ -82,57 +161,73 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
                                 // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
                             }
+                        } else {
+                            this.removeAttribute('environment-image')
                         }
                     }
 
-                    if (!this.hasAttribute('exposure')) {
+                    {
                         const prop = json['exposure']
                         if (prop != null) {
                             this.setAttribute('exposure', prop)
+                        } else {
+                            this.removeAttribute('exposure')
                         }
                     }
 
-                    if (!this.hasAttribute('shadow-intensity')) {
+                    {
                         const prop = json['shadow']?.shadowIntensity
                         if (prop != null) {
                             this.setAttribute('shadow-intensity', prop)
+                        } else {
+                            this.removeAttribute('shadow-intensity')
                         }
                     }
-                    if (!this.hasAttribute('shadow-softness')) {
+                    {
                         const prop = json['shadow']?.shadowSoftness
                         if (prop != null) {
                             this.setAttribute('shadow-softness', prop)
+                        } else {
+                            this.removeAttribute('shadow-softness')
                         }
                     }
 
-                    if (!this.hasAttribute('autoplay')) {
+                    {
                         const prop = json['playInbuiltAnimation']
                         if (!!prop) {
                             this.setAttribute('autoplay', '')
+                        } else {
+                            this.removeAttribute('autoplay')
                         }
                     }
 
-                    if (!this.hasAttribute('auto-rotate')) {
+                    {
                         const prop = json['rotate']?.autoRotate
                         if (!!prop) {
                             this.setAttribute('auto-rotate', '')
+                        } else {
+                            this.removeAttribute('auto-rotate')
                         }
                     }
 
-                    if (!this.hasAttribute('rotation-per-second')) {
+                    {
                         const prop = json['rotate']?.rotationPerSecond
                         if (prop != null) {
                             this.setAttribute('rotation-per-second', prop)
+                        } else {
+                            this.removeAttribute('rotation-per-second')
                         }
                     }
 
-                    if (!this.hasAttribute('camera-orbit')) {
+                    {
                         const prop = json['initialCameraPosition']
                         if (prop != null) {
                             const yaw = prop.yaw ?? "auto"
                             const pitch = prop.pitch ?? "auto"
                             const distance = prop.dist ?? "auto"
                             this.setAttribute('camera-orbit', `${yaw} ${pitch} ${distance}`)
+                        } else {
+                            this.removeAttribute('camera-orbit')
                         }
                     }
                 }
@@ -166,7 +261,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
                     try {
                         const logMessage = 'web'
-                            + `|${encodeURIComponent(version)}` // a version
+                            + `|${encodeURIComponent(this.#VykingMixinVersion)}` // a version
                             + `|${encodeURIComponent('')}` // client id
                             + `|${encodeURIComponent(reversedFQDN(fqdn))}` // domain
                             + `|${encodeURIComponent(type)}` // request type 
@@ -239,7 +334,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
                         loadStatsProperties(json)
 
-                        if (!this.hasAttribute('src')) {
+                        {
                             const bodyPart = json.schemaVersion === "1.1"
                                 ? json.left_foot ? json.footLeft : json.footRight
                                 : json.schemaVersion === "2.0"
@@ -257,12 +352,16 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
                             if (prop != null) {
                                 this.setAttribute('src', toResourceUrl(prop, resourcePath))
+                            } else {
+                                this.removeAttribute('src')
                             }
                         }
 
                         const prop = json['viewerAttributes']
                         if (prop != null) {
                             loadViewerAttributes(prop)
+                        } else {
+                            loadViewerAttributes({})
                         }
 
                         // If calling loadViewerAttributes did not define the 'environment-image' attribute
