@@ -276,30 +276,30 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                         const logMessageSum = sumString(logMessage)
                         console.info(`logStatsToAmazon: ${logMessage}, ${logMessageSum}`)
 
-                        // const response = await fetch(this.#internetLoggingProperties.loggingUrl, {
-                        //     method: 'POST',
-                        //     credentials: 'omit',
-                        //     cache: 'no-cache',
-                        //     headers: {
-                        //         'Content-Type': 'multipart/form-data',//'text/plain',
-                        //     },
-                        //     body: logMessage
-                        // })
-                        // if (!response.ok) { throw new Error(`${response.status}`) }
-                        // response.headers.forEach((value, key) => {
-                        //     switch (key) {
-                        //         case "vykvalue":
-                        //             this.#internetLoggingProperties.statsLoggingFailureCount = (parseInt(value, 10) === logMessageSum) ? 0 : this.#internetLoggingProperties.statsLoggingFailureCount + 1
-                        //             if (this.#internetLoggingProperties.statsLoggingFailureCount > 0) {
-                        //                 console.error(`logStatsToAmazon failed ${this.#internetLoggingProperties.statsLoggingFailureCount}.`)
-                        //             }
-                        //             break
-                        //         case "suspend":
-                        //             console.error(`logStatsToAmazon suspending service.`)
-                        //             this.#internetLoggingProperties.isSuspended = true
-                        //             break
-                        //     }
-                        // })
+                        const response = await fetch(this.#internetLoggingProperties.loggingUrl, {
+                            method: 'POST',
+                            credentials: 'omit',
+                            cache: 'no-cache',
+                            headers: {
+                                'Content-Type': 'multipart/form-data',//'text/plain',
+                            },
+                            body: logMessage
+                        })
+                        if (!response.ok) { throw new Error(`${response.status}`) }
+                        response.headers.forEach((value, key) => {
+                            switch (key) {
+                                case "vykvalue":
+                                    this.#internetLoggingProperties.statsLoggingFailureCount = (parseInt(value, 10) === logMessageSum) ? 0 : this.#internetLoggingProperties.statsLoggingFailureCount + 1
+                                    if (this.#internetLoggingProperties.statsLoggingFailureCount > 0) {
+                                        console.error(`logStatsToAmazon failed ${this.#internetLoggingProperties.statsLoggingFailureCount}.`)
+                                    }
+                                    break
+                                case "suspend":
+                                    console.error(`logStatsToAmazon suspending service.`)
+                                    this.#internetLoggingProperties.isSuspended = true
+                                    break
+                            }
+                        })
                     } catch (cause) {
                         console.error(`logStatsToAmazon: location.href "${fqdn}"`)
                         console.error(`logStatsToAmazon: ${cause}`)
