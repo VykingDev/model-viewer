@@ -28,17 +28,18 @@ export const VTOStatus: { [index: string]: VTOStatus } = {
     FAILED: 'failed'
 };
 
-export type VTOMode = 'vyking-vto-vykwebview' | 'vyking-vto-iframe' | 'none';
+export type VTOMode = 'sneakerwindow' | 'vyking' | 'none';
 
 const deserializeVTOModes = enumerationDeserializer<VTOMode>(
-    ['vyking-vto-vykwebview', 'vyking-vto-iframe', 'none']);
+    ['sneakerwindow', 'vyking', 'none']);
 
-const DEFAULT_VTO_MODES = 'vyking-vto-iframe'; // Ordered list 
-const DEFAULT_VTO_URL = 'https://sneaker-window.vyking.io/vyking-apparel/1/vyking-apparel.js';
+const DEFAULT_VTO_MODES = 'vyking'; // Ordered list 
+const DEFAULT_VTO_VYKING_APPAREL_URL = 'https://sneaker-window.vyking.io/vyking-apparel/1/vyking-apparel.js';
+const DEFAULT_VTO_SNEAKER_WINDOW_URL = 'https://sneaker-window.vyking.io/1/index.html'
 
 const VTOMode: { [index: string]: VTOMode } = {
-    VYKING_VTO_VYKWEBVIEW: 'vyking-vto-vykwebview',
-    VYKING_VTO_IFRAME: 'vyking-vto-iframe',
+    VYKING_VTO_SNEAKER_WINDOW: 'sneakerwindow',
+    VYKING_VTO_VYKING_APPAREL: 'vyking',
     NONE: 'none'
 };
 
@@ -59,7 +60,8 @@ const $triggerLoad = Symbol('triggerLoad');
 
 export declare interface VTOInterface {
     vto: boolean;
-    vtoUrl: string;
+    vtoVykingApparelUrl: string;
+    vtoSneakerWindowUrl: string;
     vtoModes: string;
     vtoConfig: string | null;
     vtoKey: string | null;
@@ -72,7 +74,11 @@ export declare interface VTOInterface {
     vtoStats: boolean;
     vtoDebug: boolean;
     readonly canActivateVTO: boolean;
-    activateVTO(): Promise<void>;
+    activateVTO(): void;
+    deactivateVTO(): void;
+    pauseVTO(): void
+    playVTO(): void
+    takePhotoVTO(type: string, encoderOptions: any): void
 }
 
 export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
@@ -98,8 +104,11 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: Number, attribute: 'vto-vykwebview-port' })
         vtoVykWebViewPort: number = 0;
 
-        @property({ type: String, attribute: 'vto-url' })
-        vtoUrl: string = DEFAULT_VTO_URL;
+        @property({ type: String, attribute: 'vto-vyking-apparel-url' })
+        vtoVykingApparelUrl: string = DEFAULT_VTO_VYKING_APPAREL_URL;
+
+        @property({ type: String, attribute: 'vto-sneaker-window-url' })
+        vtoSneakerWindowUrl: string = DEFAULT_VTO_SNEAKER_WINDOW_URL;
 
         @property({ type: String, attribute: 'vto-config' })
         vtoConfig: string | null = null;
@@ -213,21 +222,49 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
             if (changedProperties.has('vto') ||
                 changedProperties.has('vtoModes') ||
+                changedProperties.has('src') ||
                 changedProperties.has('vtoVykWebViewPort') ||
                 changedProperties.has('vtoConfig') ||
                 changedProperties.has('vtoKey')) {
                 this[$selectVTOMode]();
             }
+
+            // If the port number has changed and we are active in SneakerWindow, then re-post the config
+            // This will typically occur of the socket is broken because the app has gone into the background.
+            if (changedProperties.has('vtoVykWebViewPort')) {
+                if (this.vtoVykWebViewPort !== 0) {
+                    const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+                    switch (this[$vtoMode]) {
+                        case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                            if (vto != null && this.vtoVykWebViewPort !== 0) {
+                                (vto.contentWindow as any)?.postConfigForSocket?.(this.vtoAutoCameraWidth, this.vtoAutoCameraHeight, this.vtoVykWebViewPort)
+                                this.vtoVykWebViewPort = 0
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
 
-        async activateVTO() {
+        activateVTO() {
             console.log(`VTOModelViewerElement.activateVTO ${this[$vtoMode]}`)
+
+            //Make sure we are not already active
+            if (this.#onExit != null) {
+                return
+            }
+
             switch (this[$vtoMode]) {
-                case VTOMode.VYKING_VTO_IFRAME:
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
                     this[$openIframeViewer]();
                     break;
-                case VTOMode.VYKING_VTO_VYKWEBVIEW:
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
                     this[$openIframeViewer]();
+                    //Set the port to zero, so if the socket brakes we will resend the config when the client
+                    //sets our port number again.
+                    this.vtoVykWebViewPort = 0
                     break;
                 default:
                     console.warn(
@@ -237,23 +274,75 @@ configuration or device capabilities');
             }
         }
 
+        deactivateVTO() {
+            this.#onExit?.()
+        }
+
+        pauseVTO() {
+            console.log(`pauseVTO`)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.pause?.()
+                    break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.pause?.()
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        playVTO() {
+            console.log(`playVTO`)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.play?.()
+                    break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.play?.()
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        takePhotoVTO(type: string, encoderOptions: any) {
+            console.log(`takePhotoVTO`)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.takePhoto?.()
+                    break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.takePhoto?.(type, encoderOptions)
+                    break;
+                default:
+                    break;
+            }
+        }
+
         async[$selectVTOMode]() {
             console.log(`VTOModelViewerElement.selectVTOMode ${this.vto}, %o`, this[$vtoModes])
+            console.log(`VTOModelViewerElement.selectVTOMode ${IS_VYKING_VTO_CANDIDATE} ${IS_WKWEBVIEW}`)
+            console.log(`VTOModelViewerElement.selectVTOMode ${this.vtoConfig} ${this.vtoKey}`)
 
             let vtoMode = VTOMode.NONE;
             if (this.vto) {
                 if (this[$vykingSrc] != null) {
                     for (const value of this[$vtoModes]) {
-                        if (value === 'vyking-vto-vykwebview' &&
-                            IS_VYKING_VTO_CANDIDATE &&
-                            this.vtoVykWebViewPort !== 0 &&
-                            (IS_WKWEBVIEW || IS_ANDROID)) {
-                            vtoMode = VTOMode.VYKING_VTO_VYKWEBVIEW;
+                        if (value === 'sneakerwindow' &&
+                            IS_VYKING_VTO_CANDIDATE) {
+                            vtoMode = VTOMode.VYKING_VTO_SNEAKER_WINDOW;
                             break;
                         }
 
-                        if (value === 'vyking-vto-iframe' && IS_VYKING_VTO_CANDIDATE && this.vtoConfig != null && this.vtoKey != null) {
-                            vtoMode = VTOMode.VYKING_VTO_IFRAME;
+                        if (value === 'vyking' && IS_VYKING_VTO_CANDIDATE && this.vtoConfig != null && this.vtoKey != null) {
+                            vtoMode = VTOMode.VYKING_VTO_VYKING_APPAREL;
                             break;
                         }
                     }
@@ -311,7 +400,7 @@ configuration or device capabilities');
             // iframe.sandbox.add('allow-scripts')
             // iframe.sandbox.add('allow-modals')
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
-            iframe.srcdoc = this[$vtoMode] === VTOMode.VYKING_VTO_IFRAME
+            iframe.srcdoc = this[$vtoMode] === VTOMode.VYKING_VTO_VYKING_APPAREL
                 ? escapeHTML(this.#srcDoc(vykingApparelGlobalConfigToJSString(HTMLVykingApparelElement))).textContent!
                 : escapeHTML(this.#srcDocVykWebView()).textContent!
 
@@ -331,10 +420,13 @@ configuration or device capabilities');
 
             const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
             const onExit = () => {
+                this.#onExit = undefined
+
                 container.removeChild(iframe)
 
                 if (exitButton != null) {
                     exitButton.classList.remove('enabled');
+                    exitButton.removeEventListener('click', onExit)
                 }
 
                 container.classList.remove('enabled')
@@ -343,13 +435,18 @@ configuration or device capabilities');
                     new CustomEvent<VTOStatus>('vto-status', { detail: VTOStatus.NOT_PRESENTING }));
 
             }
+
             if (exitButton != null) {
                 exitButton.classList.add('enabled');
                 exitButton.addEventListener('click', onExit, {
                     once: true
                 });
             }
+
+            this.#onExit = onExit
         }
+
+        #onExit?: () => any
 
         #srcDoc = (config: string) => {
             const getURL = (parentUrl: string, name: string) => {
@@ -384,7 +481,7 @@ configuration or device capabilities');
             event.preventDefault()
         }, { passive: false })
     </script>
-    <script type="module" src="${this.vtoUrl}"></script>
+    <script type="module" src="${this.vtoVykingApparelUrl}"></script>
 
     <style>
         html,
@@ -551,12 +648,10 @@ body {
 </template>
 
 <script>
-    // const targetOrigin = 'https://sneaker-window.vyking.io'
-    // const targetPath = '/1/app.html'
-    const targetOrigin = 'https://192.168.0.20:3001'
-    const targetPath = '/app.html'        
+    const url = new URL('${this.vtoSneakerWindowUrl}')
+    const targetOrigin = url.origin
+    const targetPath = ${this.vtoVykWebViewPort} !== 0 ? url.pathname.replace('index.html', 'app.html') : url.pathname        
     let isReady = false
-    let selectedAccessories = '${this[$vykingSrc]}'
     let showLoaderCount = 0
 
     const showLoader = (v) => {
@@ -570,8 +665,6 @@ body {
     }
 
     function replaceAccessories(uri) {
-        selectedAccessories = uri
-
         if (!isReady) { return }
 
         showLoader()
@@ -595,26 +688,60 @@ body {
         }, targetOrigin)
     }
 
+    function takePhoto(type, encoderOptions) {
+        document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
+            type: 'VYKING_SNEAKER_WINDOW_TAKE_PHOTO',
+            toDataURL: {
+                type: type,
+                encoderOptions: encoderOptions
+            }
+        }, targetOrigin)
+    }
+
+    function postConfigForSocket(cameraWidth, cameraHeight, webSocketPort, accessoryDescriptionUrl) {    
+        document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
+            type: 'VYKING_SNEAKER_WINDOW_CONFIG_FOR_SOCKET',
+            cameraWidth: cameraWidth,
+            cameraHeight: cameraHeight,
+            webSocketPort: webSocketPort,
+            accessoryDescriptionUrl: accessoryDescriptionUrl,
+            autoPlay: true
+        },
+            targetOrigin)
+    }
+
+    function postConfig (cameraWidth, cameraHeight, accessoryDescriptionUrl) {   
+        const getConfig = async uri => {
+            const response = await fetch(encodeURI(uri), {
+                method: 'GET',
+                cache: 'no-cache',
+            })
+            if (!response.ok) {
+                throw new Error('Failed to load configuration')
+            }
+            return response.arrayBuffer()
+        }
+        
+        getConfig('${this.vtoConfig}')
+            .then(configPromise => {
+                document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
+                    type: 'VYKING_SNEAKER_WINDOW_CONFIG',
+                    cameraWidth: cameraWidth,
+                    cameraHeight: cameraHeight,
+                    config: configPromise,
+                    key: '${this.vtoKey}',
+                    accessoryDescriptionUrl: accessoryDescriptionUrl,
+                    autoPlay: true
+                },
+                    targetOrigin)
+        }) 
+    }
+
     const main = () => {
         const placeholder = document.getElementById("vyking-sneaker-window-placeholder")
         const templateClone = document.getElementById("vyking-sneaker-window-template").cloneNode(true)
         const iframe = templateClone.content.getElementById("vyking-sneaker-window")
         const targetUri = targetOrigin + targetPath
-
-        const postConfig = (clientWidth, clientHeight, webSocketPort) => {    
-            // Preferred camera dimensions (not guarenteed to be honoured)
-            let cameraWidth = 360
-            let cameraHeight = 720
-    
-            document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
-                type: 'VYKING_SNEAKER_WINDOW_CONFIG_FOR_SOCKET',
-                cameraWidth: cameraWidth,
-                cameraHeight: cameraHeight,
-                webSocketPort: webSocketPort,
-                autoPlay: true
-            },
-                targetOrigin)
-        }
 
         window.onmessage = event => {
             const { data } = event
@@ -623,7 +750,11 @@ body {
                 // Received when the VinkingSneakerWindow is ready for its configuration information.
                 // This will typically be the first message received
                 case 'VYKING_SNEAKER_WINDOW_WAITING_FOR_CONFIG':
-                    postConfig(0, 0, ${this.vtoVykWebViewPort})
+                    if (${this.vtoVykWebViewPort} === 0) {
+                        postConfig(${this.vtoAutoCameraWidth}, ${this.vtoAutoCameraHeight},'${this[$vykingSrc]}')
+                    } else {
+                        postConfigForSocket(${this.vtoAutoCameraWidth}, ${this.vtoAutoCameraHeight}, ${this.vtoVykWebViewPort}, '${this[$vykingSrc]}')
+                    }
                     break;
                 // Information message indicating licence expiry time
                 case 'VYKING_SNEAKER_WINDOW_EXPIRY_TIME':
@@ -641,8 +772,6 @@ body {
                 case 'VYKING_SNEAKER_WINDOW_READY':
                     hideLoader()
                     isReady = true
-
-                    replaceAccessories(selectedAccessories)
                     break
                 // Accessory replacement is complete
                 case 'VYKING_SNEAKER_WINDOW_REPLACE_ACCESSORIES':
