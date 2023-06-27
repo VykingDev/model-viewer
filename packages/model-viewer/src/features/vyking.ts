@@ -31,6 +31,10 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
         }
 
         @property({ type: String, attribute: 'vyking-src' }) set vykingSrc(newValue: string | null) {
+            if (this[$vykingSrc] === newValue) {
+                return 
+            }
+
             this[$vykingSrc] = newValue
             if (newValue != null) {
                 this.#loadFromOffsetsJson(newValue, () => { })
@@ -42,7 +46,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.1.1-1.2a"
+        #VykingMixinVersion = "3.1.1-1.2"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -67,6 +71,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
          * @param onError 
          */
         #loadFromOffsetsJson = (url: string, onError?: ((event: ErrorEvent) => void) | undefined) => {
+            console.log(`#loadFromOffsetsJson`)
+
             const _onError = function (e: ErrorEvent) {
                 if (onError) {
                     onError(e)
