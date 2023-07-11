@@ -101,8 +101,28 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-modes' })
         vtoModes: string = DEFAULT_VTO_MODES;
 
-        @property({ type: Number, attribute: 'vto-vykwebview-port' })
-        vtoVykWebViewPort: number = 0;
+        // @property({ type: Number, attribute: 'vto-vykwebview-port' })
+        // vtoVykWebViewPort: number = 0;
+        #vtoVykWebViewPort: number = 0;
+        @property({ type: Number }) set vtoVykWebViewPort(newValue: number) {
+            this.#vtoVykWebViewPort = newValue
+
+            // If the port number has changed and we are active in SneakerWindow, then re-post the config
+            // This will typically occur if the socket is broken because the app has gone into the background.
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    if (vto != null && this.vtoVykWebViewPort !== 0) {
+                        (vto.contentWindow as any)?.postConfigForSocket?.(this.vtoAutoCameraWidth, this.vtoAutoCameraHeight, this.vtoVykWebViewPort)
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        get vtoVykWebViewPort() {
+            return this.#vtoVykWebViewPort
+        }
 
         @property({ type: String, attribute: 'vto-vyking-apparel-url' })
         vtoVykingApparelUrl: string = DEFAULT_VTO_VYKING_APPAREL_URL;
@@ -228,28 +248,10 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
                 changedProperties.has('vtoKey')) {
                 this[$selectVTOMode]();
             }
-
-            // If the port number has changed and we are active in SneakerWindow, then re-post the config
-            // This will typically occur of the socket is broken because the app has gone into the background.
-            if (changedProperties.has('vtoVykWebViewPort')) {
-                if (this.vtoVykWebViewPort !== 0) {
-                    const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
-                    switch (this[$vtoMode]) {
-                        case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
-                            if (vto != null && this.vtoVykWebViewPort !== 0) {
-                                (vto.contentWindow as any)?.postConfigForSocket?.(this.vtoAutoCameraWidth, this.vtoAutoCameraHeight, this.vtoVykWebViewPort)
-                                this.vtoVykWebViewPort = 0
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
         }
 
         activateVTO() {
-            console.log(`VTOModelViewerElement.activateVTO ${this[$vtoMode]}`)
+            console.log(`VTOModelViewerElement.activateVTO ${this[$vtoMode]} ${this.vtoVykWebViewPort}`)
 
             //Make sure we are not already active
             if (this.#onExit != null) {
@@ -262,9 +264,6 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
                     break;
                 case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
                     this[$openIframeViewer]();
-                    //Set the port to zero, so if the socket brakes we will resend the config when the client
-                    //sets our port number again.
-                    this.vtoVykWebViewPort = 0
                     break;
                 default:
                     console.warn(
@@ -433,7 +432,6 @@ configuration or device capabilities');
                 this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
                 this.dispatchEvent(
                     new CustomEvent<VTOStatus>('vto-status', { detail: VTOStatus.NOT_PRESENTING }));
-
             }
 
             if (exitButton != null) {
@@ -685,6 +683,11 @@ body {
     function pause() {
         document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
             type: 'VYKING_SNEAKER_WINDOW_PAUSE'
+        }, targetOrigin)
+    }
+    function dispose() {
+        document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
+            type: 'VYKING_SNEAKER_WINDOW_DISPOSE'
         }, targetOrigin)
     }
 
