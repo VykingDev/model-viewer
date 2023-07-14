@@ -754,7 +754,7 @@ body {
                 // This will typically be the first message received
                 case 'VYKING_SNEAKER_WINDOW_WAITING_FOR_CONFIG':
                     if (${this.vtoVykWebViewPort} === 0) {
-                        postConfig(${this.vtoAutoCameraWidth}, ${this.vtoAutoCameraHeight},'${this[$vykingSrc]}')
+                        postConfig(${this.vtoAutoCameraWidth}, ${this.vtoAutoCameraHeight})
                     } else {
                         postConfigForSocket(${this.vtoAutoCameraWidth}, ${this.vtoAutoCameraHeight}, ${this.vtoVykWebViewPort}, '${this[$vykingSrc]}')
                     }
@@ -775,6 +775,10 @@ body {
                 case 'VYKING_SNEAKER_WINDOW_READY':
                     hideLoader()
                     isReady = true
+
+                    if (${this.vtoVykWebViewPort} === 0) {
+                      replaceAccessories('${this[$vykingSrc]}')
+                    }
                     break
                 // Accessory replacement is complete
                 case 'VYKING_SNEAKER_WINDOW_REPLACE_ACCESSORIES':
