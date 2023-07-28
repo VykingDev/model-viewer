@@ -20,3 +20,4 @@ Start SneakerWindow dev server with: npm start (in the SneakerWindow project)
     - Ensure live site SneakerWindow & vyking-apparel are selected
     - Edit model-viewer-test.html to test with vto-modes="vyking sneakerwindow"
     - Edit model-viewer-test.html to test with vto-modes="sneakerwindow vyking"
+    - Edit model-viewer-test.html to test when self.HTMLVykingApparelElement.isDisabled is true or false
