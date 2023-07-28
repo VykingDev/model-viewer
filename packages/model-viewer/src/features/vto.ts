@@ -14,6 +14,7 @@ import { Constructor, waitForEvent } from '../utilities.js';
 export interface VykingApparelGlobalConfig {
     isDisabled?: boolean
     disabledQRCodeUrl?: string
+    disabledQRCodeCaption?: string
 }
 
 let isVTOBlocked = false;
@@ -386,6 +387,7 @@ configuration or device capabilities');
                 'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
                     .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
                     .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
+                    .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
 
             const HTMLVykingApparelElement: VykingApparelGlobalConfig =
                 (self as any).HTMLVykingApparelElement || {}
@@ -484,11 +486,11 @@ configuration or device capabilities');
     <style>
         html,
         body {
-            background-color: black;
+            border:0;
             height: 100%;
             left: 0;
-            margin: auto;
-            padding: 0px;
+            margin: 0;
+            padding: 0;
             position: fixed;
             top: 0;
             width: 100%;
@@ -514,7 +516,6 @@ configuration or device capabilities');
     <vyking-apparel id="vyking-apparel"
         ${this.vtoStats ? 'stats' : ''}
         ${this.vtoDebug ? 'debug' : ''}  
-        onerror="alert('Error: ' + event.message)"
         autocamera 
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
@@ -524,7 +525,6 @@ configuration or device capabilities');
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
-        ${!!this[$poster] ? 'poster="' + this[$poster] + '"' : ''}
         ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
         ${!!this.getAttribute('environment-image') ? 'default-environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
