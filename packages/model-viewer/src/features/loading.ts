@@ -355,6 +355,10 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       if (changedProperties.has('poster') && this.poster != null) {
         this[$defaultPosterElement].style.backgroundImage =
             `url(${this.poster})`;
+
+        // Vyking 25/07/2023: We may use this[$poster] when launching the vto
+        // so make sure its update when the attribute is changed.   
+        this[$poster] = this.poster
       }
 
       if (changedProperties.has('alt')) {
