@@ -75,8 +75,12 @@ export declare interface VTOInterface {
     vtoStats: boolean;
     vtoDebug: boolean;
     readonly canActivateVTO: boolean;
+    readonly VTOElement?: HTMLElement;
+    readonly VTOMode: VTOMode;
     activateVTO(): void;
     deactivateVTO(): void;
+    replaceApparelVTO(url: string, name?: string): void;
+    removeApparelVTO(): void;
     pauseVTO(): void
     playVTO(): void
     takePhotoVTO(type: string, encoderOptions: any): void
@@ -172,6 +176,24 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null;
         }
 
+        get VTOElement() {
+            console.log(`VTOElement`)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    return vto?.contentWindow?.document.querySelector('vyking-apparel') as HTMLElement | undefined
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    return vto?.contentWindow as HTMLElement | undefined
+                default:
+                    return undefined
+            }
+        }
+
+        get VTOMode() {
+            return this[$vtoMode]
+        }
+
         // TODO: Add this to the shadow root as part of this mixin's
         // implementation:
         protected [$vtoButtonContainer]: HTMLElement =
@@ -243,7 +265,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
             if (changedProperties.has('vto') ||
                 changedProperties.has('vtoModes') ||
-                changedProperties.has('src') ||
+                changedProperties.has('src') || // SB 31/07/2023 We watch this attribute because we can't watch this[$vykingSrc]
                 changedProperties.has('vtoVykWebViewPort') ||
                 changedProperties.has('vtoConfig') ||
                 changedProperties.has('vtoKey')) {
@@ -276,6 +298,40 @@ configuration or device capabilities');
 
         deactivateVTO() {
             this.#onExit?.()
+        }
+
+        replaceApparelVTO(url: string, name?: string) {
+            console.log(`replaceApparelVTO: ${url}, ${name}`)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.setAttribute('apparel', url)
+                        (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.setAttribute('alt', name)
+                    break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.replaceAccessories?.(url)
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        removeApparelVTO() {
+            console.log(`removeApparelVTO: `)
+
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.removeAttribute('apparel')
+                        (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.removeAttribute('alt')
+                    break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.removeAccessories?.()
+                    break;
+                default:
+                    break;
+            }
         }
 
         pauseVTO() {
@@ -327,7 +383,7 @@ configuration or device capabilities');
         }
 
         async[$selectVTOMode]() {
-            console.log(`VTOModelViewerElement.selectVTOMode ${this.vto}, %o`, this[$vtoModes])
+            console.log(`VTOModelViewerElement.selectVTOMode ${this.vto} ${this[$vykingSrc]}, %o`, this[$vtoModes])
             console.log(`VTOModelViewerElement.selectVTOMode ${IS_VYKING_VTO_CANDIDATE} ${IS_WKWEBVIEW}`)
             console.log(`VTOModelViewerElement.selectVTOMode ${this.vtoConfig} ${this.vtoKey}`)
 
@@ -675,6 +731,18 @@ body {
         }
     }
 
+    function removeAccessories() {
+        if (!isReady) { return }
+
+        showLoader()
+
+        if (document.getElementById('vyking-sneaker-window') != null) {
+            document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
+                type: 'VYKING_SNEAKER_WINDOW_REMOVE_ACCESSORIES'
+            }, targetOrigin)
+        }
+    }
+
     function play() {
         document.getElementById('vyking-sneaker-window') && document.getElementById('vyking-sneaker-window').contentWindow.postMessage({
             type: 'VYKING_SNEAKER_WINDOW_PLAY'
@@ -782,6 +850,9 @@ body {
                     break
                 // Accessory replacement is complete
                 case 'VYKING_SNEAKER_WINDOW_REPLACE_ACCESSORIES':
+                    if (data.complete === 1) { hideLoader() }
+                    break
+                case 'VYKING_SNEAKER_WINDOW_REMOVE_ACCESSORIES':
                     if (data.complete === 1) { hideLoader() }
                     break
                 case 'VYKING_SNEAKER_WINDOW_ARE_FEET_DETECTED':
