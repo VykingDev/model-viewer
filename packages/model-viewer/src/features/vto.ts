@@ -17,8 +17,6 @@ export interface VykingApparelGlobalConfig {
     disabledQRCodeCaption?: string
 }
 
-let isVTOBlocked = false;
-
 export type VTOStatus =
     'not-presenting' | 'presenting' | 'presenting-qrcode' | 'failed';
 
@@ -79,8 +77,6 @@ export declare interface VTOInterface {
     readonly VTOMode: VTOMode;
     activateVTO(): void;
     deactivateVTO(): void;
-    replaceApparelVTO(url: string, name?: string): void;
-    removeApparelVTO(): void;
     pauseVTO(): void
     playVTO(): void
     takePhotoVTO(type: string, encoderOptions: any): void
@@ -263,6 +259,50 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
                 this[$vtoModes] = deserializeVTOModes(this.vtoModes);
             }
 
+            // Reflect any property changes into the VTO before the model-viewer because changes to
+            // properties like 'src' mean we loose the knowledge of the current vtoMode and this function
+            // uses that to decide if to change any VTO properties.
+            const reflectChangesIntoVTO = (properties: Map<string, any>) => {
+                console.log(`VTOModelViewerElement reflectChangesIntoVTO ${this[$vtoMode]} %o`, properties)
+
+                const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null | undefined
+
+                switch (this[$vtoMode]) {
+                    case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                        const vykingApparel = vto?.contentWindow?.document?.querySelector('vyking-apparel')
+
+                        properties.forEach((value, key) => {
+                            if (value == null) {
+                                vykingApparel?.removeAttribute(key)
+                            } else {
+                                vykingApparel?.setAttribute(key, value)
+                            }
+                        })
+                        break;
+                    case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                        if (properties.has('apparel')) {
+                            const value = properties.get('apparel')
+                            if (value == null) {
+                                (vto?.contentWindow as any)?.removeAccessories?.()
+                            } else {
+                                (vto?.contentWindow as any)?.replaceAccessories?.(value)
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            const changedVTOProperties = new Map<string, any>()
+            if (changedProperties.has('src')) {
+                changedVTOProperties.set('apparel', this[$vykingSrc])
+            }
+            if (changedProperties.has('alt')) {
+                changedVTOProperties.set('alt', this.alt)
+            }
+            reflectChangesIntoVTO(changedVTOProperties)
+
             if (changedProperties.has('vto') ||
                 changedProperties.has('vtoModes') ||
                 changedProperties.has('src') || // SB 31/07/2023 We watch this attribute because we can't watch this[$vykingSrc]
@@ -298,40 +338,6 @@ configuration or device capabilities');
 
         deactivateVTO() {
             this.#onExit?.()
-        }
-
-        replaceApparelVTO(url: string, name?: string) {
-            console.log(`replaceApparelVTO: ${url}, ${name}`)
-
-            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
-            switch (this[$vtoMode]) {
-                case VTOMode.VYKING_VTO_VYKING_APPAREL:
-                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.setAttribute('apparel', url)
-                        (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.setAttribute('alt', name)
-                    break;
-                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
-                    (vto?.contentWindow as any)?.replaceAccessories?.(url)
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        removeApparelVTO() {
-            console.log(`removeApparelVTO: `)
-
-            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
-            switch (this[$vtoMode]) {
-                case VTOMode.VYKING_VTO_VYKING_APPAREL:
-                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.removeAttribute('apparel')
-                        (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.removeAttribute('alt')
-                    break;
-                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
-                    (vto?.contentWindow as any)?.removeAccessories?.()
-                    break;
-                default:
-                    break;
-            }
         }
 
         pauseVTO() {
@@ -469,11 +475,6 @@ configuration or device capabilities');
             const status = this.#isDisabled ? VTOStatus.PRESENTING_QRCODE : VTOStatus.PRESENTING
             this.setAttribute('vto-status', status);
             this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));
-
-            // This doesn't work on iphone safari
-            // if (iframe.requestFullscreen) {
-            //     iframe.requestFullscreen();
-            // }
 
             const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
             const onExit = () => {

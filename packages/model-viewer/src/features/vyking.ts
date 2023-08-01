@@ -6,16 +6,9 @@
 
 import { property } from 'lit/decorators.js';
 
-import { IS_VYKING_VTO_CANDIDATE } from '../constants.js';
-import ModelViewerElementBase, { $poster, $vykingSrc } from '../model-viewer-base.js';
+import ModelViewerElementBase, { $vykingSrc } from '../model-viewer-base.js';
 import { Constructor } from '../utilities.js';
 import { FileLoader, LoaderUtils } from 'three';
-
-export interface VykingApparelGlobalConfig {
-    isDisabled?: boolean
-    disabledQRCodeUrl?: string
-}
-
 export declare interface VykingInterface {
     vykingSrc: string | null;
 }
