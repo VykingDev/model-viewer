@@ -396,14 +396,19 @@ export default class ModelViewerElementBase extends ReactiveElement {
     // though the value has effectively not changed, so we need to check to make
     // sure that the value has actually changed before changing the loaded flag.
     if (changedProperties.has('src')) {
-      if (this.src == null) {
-        this[$loaded] = false;
-        this[$loadedTime] = 0;
-        this[$scene].reset();
-      } else if (this.src !== this[$scene].url) {
-        this[$loaded] = false;
-        this[$loadedTime] = 0;
-        this[$updateSource]();
+      // VYKING 01/08/2023 We need to remove the model from the model-viewer whilst the vto is active
+      // otherwise we may not have enough memory.  This stops any model changes occurring during a active VTO
+      // session from loading the model into the model-viewer
+      if (this.getAttribute('vto-status') === 'not-presenting') {
+        if (this.src == null) {
+          this[$loaded] = false;
+          this[$loadedTime] = 0;
+          this[$scene].reset();
+        } else if (this.src !== this[$scene].url) {
+          this[$loaded] = false;
+          this[$loadedTime] = 0;
+          this[$updateSource]();
+        }
       }
     }
 

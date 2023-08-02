@@ -7,9 +7,9 @@
 import { property } from 'lit/decorators.js';
 
 import { IS_ANDROID, IS_VYKING_VTO_CANDIDATE, IS_WKWEBVIEW } from '../constants.js';
-import ModelViewerElementBase, { $poster, $renderer, $vykingSrc } from '../model-viewer-base.js';
+import ModelViewerElementBase, { $renderer, $scene, $vykingSrc } from '../model-viewer-base.js';
 import { enumerationDeserializer } from '../styles/deserializers.js';
-import { Constructor, waitForEvent } from '../utilities.js';
+import { Constructor } from '../utilities.js';
 
 export interface VykingApparelGlobalConfig {
     isDisabled?: boolean
@@ -444,6 +444,9 @@ configuration or device capabilities');
             console.log(`VTOModelViewerElement.openIframeViewer ${self.location.href} ${this[$vtoMode]}`)
             console.log(`Attempting to present in VTO with iframe: ${this.src}`);
 
+            // Reset the scene to free memory
+            this[$scene].reset()
+
             const escapeHTML = (text: string) => document.createTextNode(text)
             const vykingApparelGlobalConfigToJSString = (config: VykingApparelGlobalConfig) =>
                 'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
@@ -489,6 +492,15 @@ configuration or device capabilities');
 
                 container.classList.remove('enabled')
                 this.setAttribute('vto-status', VTOStatus.NOT_PRESENTING);
+
+                //Re-applying vyking-src now we are not presenting will allow the 
+                //model-viewer to update
+                const tmp = this.getAttribute('vyking-src') 
+                this.removeAttribute('vyking-src')
+                if (tmp != null) {
+                    this.setAttribute('vyking-src', tmp)
+                }
+
                 this.dispatchEvent(
                     new CustomEvent<VTOStatus>('vto-status', { detail: VTOStatus.NOT_PRESENTING }));
             }
