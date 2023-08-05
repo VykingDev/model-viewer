@@ -149,6 +149,12 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-advice' })
         vtoAdvice: string | null = null;
 
+        @property({ type: String, attribute: 'vto-share' })
+        vtoShare: string | null = null;
+
+        @property({ type: Number, attribute: 'vto-share-quality' })
+        vtoShareQuality: number = 1.0;
+
         @property({ type: Boolean, attribute: 'vto-flipy' })
         vtoFlipY: boolean = false;
 
@@ -595,6 +601,8 @@ configuration or device capabilities');
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
         ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
+        ${!!this.vtoShare ? 'share="' + this.vtoShare + '"' : ''}
+        ${!!this.vtoShareQuality ? 'share-quality="' + this.vtoShareQuality + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
         ${!!this.getAttribute('environment-image') ? 'default-environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
