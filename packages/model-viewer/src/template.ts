@@ -254,7 +254,7 @@ canvas {
 
 #default-vto-button {
   position: absolute;
-  bottom: 56px;
+  bottom: 60px;
   right: 16px;
   transform: scale(var(--vto-button-scale, 1));
   transform-origin: bottom right;
@@ -354,7 +354,7 @@ canvas {
   <div class="slot vto-button">
     <slot name="vto-button">
       <a id="default-vto-button" part="default-vto-button" class="fab"
-          tabindex=4"
+          tabindex=1"
           aria-label="View on your body">
         ${VTOGlyph}
       </a>

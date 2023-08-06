@@ -15,6 +15,9 @@ export interface VykingApparelGlobalConfig {
     isDisabled?: boolean
     disabledQRCodeUrl?: string
     disabledQRCodeCaption?: string
+    powerPreference?: "high-performance" | "low-power" | "default"
+    style?: string
+    html?: string
 }
 
 export type VTOStatus =
@@ -211,26 +214,6 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             event.preventDefault();
             this.activateVTO();
         };
-
-        // private[$onVTOStatus] = ({status}: ThreeEvent) => {
-        //   if (status === ARStatus.NOT_PRESENTING ||
-        //       this[$renderer].arRenderer.presentedScene === this[$scene]) {
-        //     this.setAttribute('ar-status', status);
-        //     this.dispatchEvent(
-        //         new CustomEvent<VTOStatusDetails>('ar-status', {detail: {status}}));
-        //     if (status === ARStatus.NOT_PRESENTING) {
-        //       this.removeAttribute('ar-tracking');
-        //     } else if (status === ARStatus.SESSION_STARTED) {
-        //       this.setAttribute('ar-tracking', ARTracking.TRACKING);
-        //     }
-        //   }
-        // };
-
-        // private[$onVTOTracking] = ({status}: ThreeEvent) => {
-        //   this.setAttribute('ar-tracking', status);
-        //   this.dispatchEvent(new CustomEvent<ARTrackingDetails>(
-        //       'ar-tracking', {detail: {status}}));
-        // };
 
         connectedCallback() {
             super.connectedCallback();
@@ -429,19 +412,6 @@ configuration or device capabilities');
             this[$vtoMode] = vtoMode;
         }
 
-        // async[$triggerLoad]() {
-        //     if (!this.loaded) {
-        //         this[$preload] = true;
-        //         this[$updateSource]();
-        //         await waitForEvent(this, 'load');
-        //         this[$preload] = false;
-        //     }
-        // }
-
-        // [$shouldAttemptPreload](): boolean {
-        //     return super[$shouldAttemptPreload]() || this[$preload];
-        // }
-
         /**
          * Takes a URL and a title string, and attempts to launch VTO on
          * the current device.
@@ -473,8 +443,8 @@ configuration or device capabilities');
             // iframe.sandbox.add('allow-modals')
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
             iframe.srcdoc = this[$vtoMode] === VTOMode.VYKING_VTO_VYKING_APPAREL
-                ? escapeHTML(this.#srcDoc(vykingApparelGlobalConfigToJSString(HTMLVykingApparelElement))).textContent!
-                : escapeHTML(this.#srcDocVykWebView()).textContent!
+                ? escapeHTML(this.#vykingApparelTemplate(HTMLVykingApparelElement)).textContent!
+                : escapeHTML(this.sneakerWindowTemplate()).textContent!
 
             console.log(`iframe %o`, iframe)
 
@@ -523,7 +493,14 @@ configuration or device capabilities');
 
         #onExit?: () => any
 
-        #srcDoc = (config: string) => {
+        #vykingApparelTemplate = (config: VykingApparelGlobalConfig) => {
+            const toVykingApparelGlobalConfigString = (config: VykingApparelGlobalConfig) =>
+            'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
+                .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
+                .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
+                .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
+                .concat(config.powerPreference != null ? `        self.HTMLVykingApparelElement.powerPreference = "${config.powerPreference}";\n` : '')
+
             const getURL = (parentUrl: string, name: string) => {
                 // console.log(`getURL: ${parentUrl}, ${name}`)
 
@@ -549,7 +526,7 @@ configuration or device capabilities');
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
 
     <script>
-        ${config}
+        ${toVykingApparelGlobalConfigString(config)}
 
         // Disable pinch to zoom because it crashes iOS Safari.
         document.addEventListener('touchmove', function (event) {
@@ -584,6 +561,8 @@ configuration or device capabilities');
             padding: 0px;
             width: 100%;
         }
+
+        ${config.style}
     </style>
 </head>
 
@@ -612,6 +591,7 @@ configuration or device capabilities');
         >
         <video slot="src" hidden autoplay muted playsinline></video>
         <canvas slot="canvas">Virtual Try On</canvas>
+        ${config.html}
     </vyking-apparel>
 </body>
 
@@ -619,7 +599,7 @@ configuration or device capabilities');
 `
         }
 
-        #srcDocVykWebView = () => {
+        sneakerWindowTemplate = () => {
             return `
 <!DOCTYPE html>
 <html>
