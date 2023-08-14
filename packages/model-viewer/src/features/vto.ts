@@ -70,7 +70,7 @@ export declare interface VTOInterface {
     vtoAutoCameraWidth: number;
     vtoAutoCameraHeight: number;
     vtoAutoCameraFramerate: number;
-    vtoAdvice: string | null;
+    vtoShareQuality: number;
     vtoFlipY: boolean;
     vtoRotate: boolean;
     vtoStats: boolean;
@@ -148,12 +148,6 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
         @property({ type: String, attribute: 'vto-autocamera-framerate' })
         vtoAutoCameraFramerate: number = 60;
-
-        @property({ type: String, attribute: 'vto-advice' })
-        vtoAdvice: string | null = null;
-
-        @property({ type: String, attribute: 'vto-share' })
-        vtoShare: string | null = null;
 
         @property({ type: Number, attribute: 'vto-share-quality' })
         vtoShareQuality: number = 1.0;
@@ -548,12 +542,6 @@ configuration or device capabilities');
             width: 100%;
         }
 
-        .advice {
-            display: none;
-            width: 100px;
-            pointer-events: none;
-        }
-
         #vyking-apparel {
             border: 0px;
             height: 100%;
@@ -562,7 +550,7 @@ configuration or device capabilities');
             width: 100%;
         }
 
-        ${config.style}
+        ${config.style ?? ''}
     </style>
 </head>
 
@@ -579,8 +567,6 @@ configuration or device capabilities');
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
-        ${!!this.vtoAdvice ? 'advice="' + this.vtoAdvice + '"' : ''}
-        ${!!this.vtoShare ? 'share="' + this.vtoShare + '"' : ''}
         ${!!this.vtoShareQuality ? 'share-quality="' + this.vtoShareQuality + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
         ${!!this.getAttribute('environment-image') ? 'default-environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
@@ -591,7 +577,7 @@ configuration or device capabilities');
         >
         <video slot="src" hidden autoplay muted playsinline></video>
         <canvas slot="canvas">Virtual Try On</canvas>
-        ${config.html}
+        ${config.html ?? ''}
     </vyking-apparel>
 </body>
 
