@@ -82,7 +82,7 @@ export declare interface VTOInterface {
     deactivateVTO(): void;
     pauseVTO(): void
     playVTO(): void
-    takePhotoVTO(type: string, encoderOptions: any): void
+    // takePhotoVTO(type: string, encoderOptions: any): void
 }
 
 export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
@@ -355,21 +355,23 @@ configuration or device capabilities');
             }
         }
 
-        takePhotoVTO(type: string, encoderOptions: any) {
-            console.log(`takePhotoVTO`)
+        // SB 16/08/2023 This is too messy and complicated to get working in all scenarios, so for the
+        // moment I'm not supporting it.
+        // takePhotoVTO(type: string, encoderOptions: any) {
+        //     console.log(`takePhotoVTO`)
 
-            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
-            switch (this[$vtoMode]) {
-                case VTOMode.VYKING_VTO_VYKING_APPAREL:
-                    (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.takePhoto?.()
-                    break;
-                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
-                    (vto?.contentWindow as any)?.takePhoto?.(type, encoderOptions)
-                    break;
-                default:
-                    break;
-            }
-        }
+        //     const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+        //     switch (this[$vtoMode]) {
+        //         case VTOMode.VYKING_VTO_VYKING_APPAREL:
+        //             (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.share?.()
+        //             break;
+        //         case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+        //             (vto?.contentWindow as any)?.takePhoto?.(type, encoderOptions)
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // }
 
         async[$selectVTOMode]() {
             console.log(`VTOModelViewerElement.selectVTOMode ${this.vto} ${this[$vykingSrc]}, %o`, this[$vtoModes])
@@ -530,6 +532,9 @@ configuration or device capabilities');
     <script type="module" src="${this.vtoVykingApparelUrl}"></script>
 
     <style>
+        /* Without this the custom loader doesn't start properly at the beginning on iOS */
+        /* an other user defined slot elements are visible too soon. */
+        *:not(:defined) { display:none }
         html,
         body {
             border:0;
@@ -817,7 +822,7 @@ body {
                 // Information message indicating licence expiry time
                 case 'VYKING_SNEAKER_WINDOW_EXPIRY_TIME':
                     console.info('Licence expiry date: ' + data.expiryTime.toString())
-                    //If close to licencse expiry reload the configuration file ready for next time
+                    //If close to licence expiry reload the configuration file ready for next time
                     if (data.expiryTime.getTime() - new Date().getTime() < 1 * 24 * 60 * 60 * 1000) {
                         alert('Expiry date: ' + data.expiryTime.toString())
                         fetch(configUri, {
