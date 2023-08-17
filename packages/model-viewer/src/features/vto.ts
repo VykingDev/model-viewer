@@ -108,7 +108,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         // @property({ type: Number, attribute: 'vto-vykwebview-port' })
         // vtoVykWebViewPort: number = 0;
         #vtoVykWebViewPort: number = 0;
-        @property({ type: Number }) set vtoVykWebViewPort(newValue: number) {
+        @property({ type: Number, attribute: 'vto-vykwebview-port' }) set vtoVykWebViewPort(newValue: number) {
             this.#vtoVykWebViewPort = newValue
 
             // If the port number has changed and we are active in SneakerWindow, then re-post the config
@@ -355,23 +355,22 @@ configuration or device capabilities');
             }
         }
 
-        // SB 16/08/2023 This is too messy and complicated to get working in all scenarios, so for the
-        // moment I'm not supporting it.
-        // takePhotoVTO(type: string, encoderOptions: any) {
-        //     console.log(`takePhotoVTO`)
+        // SB 17/08/2023 This only works for SneakerWindow VTO.
+        takePhotoVTO(type: string, encoderOptions: any) {
+            console.log(`takePhotoVTO`)
 
-        //     const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
-        //     switch (this[$vtoMode]) {
-        //         case VTOMode.VYKING_VTO_VYKING_APPAREL:
-        //             (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.share?.()
-        //             break;
-        //         case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
-        //             (vto?.contentWindow as any)?.takePhoto?.(type, encoderOptions)
-        //             break;
-        //         default:
-        //             break;
-        //     }
-        // }
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            switch (this[$vtoMode]) {
+                // case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                //     (vto?.contentWindow?.document.querySelector('vyking-apparel') as any)?.share?.()
+                //     break;
+                case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
+                    (vto?.contentWindow as any)?.takePhoto?.(type, encoderOptions)
+                    break;
+                default:
+                    break;
+            }
+        }
 
         async[$selectVTOMode]() {
             console.log(`VTOModelViewerElement.selectVTOMode ${this.vto} ${this[$vykingSrc]}, %o`, this[$vtoModes])
