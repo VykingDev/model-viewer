@@ -232,12 +232,11 @@ canvas {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 40px;
-  height: 40px;
+  /*width: 105px;*/
+  /*height: 30px;*/
   cursor: pointer;
-  background-color: #fff;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);
-  border-radius: 100px;
+  /*box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);*/
+  /*border-radius: 100px;*/
 }
 
 .fab > * {
@@ -247,16 +246,16 @@ canvas {
 #default-ar-button {
   position: absolute;
   bottom: 16px;
-  right: 16px;
-  transform: scale(var(--ar-button-scale, 1));
+  right: 10px;
+  transform: scale(var(--ar-button-scale, 0.5));
   transform-origin: bottom right;
 }
 
 #default-vto-button {
   position: absolute;
-  bottom: 60px;
-  right: 16px;
-  transform: scale(var(--vto-button-scale, 1));
+  bottom: 46px;
+  right: 10px;
+  transform: scale(var(--vto-button-scale, 0.5));
   transform-origin: bottom right;
 }
 
@@ -354,7 +353,7 @@ canvas {
   <div class="slot vto-button">
     <slot name="vto-button">
       <a id="default-vto-button" part="default-vto-button" class="fab"
-          tabindex=1"
+          tabindex="1"
           aria-label="View on your body">
         ${VTOGlyph}
       </a>
