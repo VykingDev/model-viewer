@@ -89,6 +89,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
     ModelViewerElement: T): Constructor<VTOInterface> & T => {
     class VTOModelViewerElement extends ModelViewerElement {
         /** @ignore */ readonly #isDisabled: boolean
+        /** @ignore */ readonly #disabledQRCodeUrl?: string
 
         constructor(...args: Array<any>) {
             super(args)
@@ -98,6 +99,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             const HTMLVykingApparelElement: VykingApparelGlobalConfig =
                 (self as any).HTMLVykingApparelElement || {}
             this.#isDisabled = HTMLVykingApparelElement.isDisabled || false
+            this.#disabledQRCodeUrl = HTMLVykingApparelElement.disabledQRCodeUrl
         }
 
         @property({ type: Boolean, attribute: 'vto' }) vto: boolean = false;
@@ -378,7 +380,7 @@ configuration or device capabilities');
             console.log(`VTOModelViewerElement.selectVTOMode ${this.vtoConfig} ${this.vtoKey}`)
 
             let vtoMode = VTOMode.NONE;
-            if (this.vto) {
+            if (this.vto && (!this.#isDisabled || (this.#isDisabled && this.#disabledQRCodeUrl != null))) {
                 if (this[$vykingSrc] != null) {
                     for (const value of this[$vtoModes]) {
                         if (value === 'sneakerwindow' &&
@@ -419,12 +421,6 @@ configuration or device capabilities');
             this[$scene].reset()
 
             const escapeHTML = (text: string) => document.createTextNode(text)
-            const vykingApparelGlobalConfigToJSString = (config: VykingApparelGlobalConfig) =>
-                'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
-                    .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
-                    .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
-                    .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
-
             const HTMLVykingApparelElement: VykingApparelGlobalConfig =
                 (self as any).HTMLVykingApparelElement || {}
             const container = this.shadowRoot!.querySelector('#default-vto') as HTMLElement
@@ -547,6 +543,9 @@ configuration or device capabilities');
         }
 
         #vyking-apparel {
+            background-color: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
             border: 0px;
             height: 100%;
             margin: 0px;
