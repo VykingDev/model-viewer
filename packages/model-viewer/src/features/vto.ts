@@ -174,7 +174,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
         get canActivateVTO(): boolean {
             // console.log(`${this[$vtoMode]} ${this[$vykingSrc]}`)
-            return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null;
+            return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null && (!this.#isDisabled || (this.#isDisabled && this.#disabledQRCodeUrl != null));
         }
 
         get VTOElement() {
