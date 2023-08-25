@@ -172,6 +172,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: Boolean, attribute: 'vto-debug' })
         vtoDebug: boolean = false;
 
+        @property({ type: Boolean, attribute: 'vto-share' })
+        vtoShare: boolean = false;
+
         get canActivateVTO(): boolean {
             // console.log(`${this[$vtoMode]} ${this[$vykingSrc]}`)
             return this[$vtoMode] !== VTOMode.NONE && this[$vykingSrc] != null && (!this.#isDisabled || (this.#isDisabled && this.#disabledQRCodeUrl != null));
@@ -561,6 +564,7 @@ configuration or device capabilities');
     <vyking-apparel id="vyking-apparel"
         ${this.vtoStats ? 'stats' : ''}
         ${this.vtoDebug ? 'debug' : ''}  
+        ${this.vtoShare ? 'share' : ''}  
         autocamera 
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
