@@ -20,12 +20,12 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
         constructor(...args: Array<any>) {
             super(args)
 
-            console.info(`VykingModelViewerElement version: ${this.#VykingMixinVersion}`)    
+            console.info(`VykingModelViewerElement version: ${this.#VykingMixinVersion}`)
         }
 
         @property({ type: String, attribute: 'vyking-src' }) set vykingSrc(newValue: string | null) {
             if (this[$vykingSrc] === newValue) {
-                return 
+                return
             }
 
             this[$vykingSrc] = newValue
@@ -39,7 +39,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.1.1-1.4"
+        #VykingMixinVersion = "3.1.1-1.5"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -152,7 +152,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                 // }
                 const loadViewerAttributes = (json: any): void => {
                     {
-                        const prop = json['environmentImage']
+                        const prop = json['environmentImage-viewer']
                         if (prop != null) {
                             if (prop === 'neutral' || prop === 'legacy') {
                                 this.setAttribute('environment-image', prop)
@@ -161,16 +161,31 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                 // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
                             }
                         } else {
-                            this.removeAttribute('environment-image')
+                            const prop = json['environmentImage']
+                            if (prop != null) {
+                                if (prop === 'neutral' || prop === 'legacy') {
+                                    this.setAttribute('environment-image', prop)
+                                } else {
+                                    this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
+                                    // this.setAttribute('skybox-image', toResourceUrl(prop, resourcePath))
+                                }
+                            } else {
+                                this.removeAttribute('environment-image')
+                            }
                         }
                     }
 
                     {
-                        const prop = json['exposure']
+                        const prop = json['exposure_viewer']
                         if (prop != null) {
                             this.setAttribute('exposure', prop)
                         } else {
-                            this.removeAttribute('exposure')
+                            const prop = json['exposure']
+                            if (prop != null) {
+                                this.setAttribute('exposure', prop)
+                            } else {
+                                this.removeAttribute('exposure')
+                            }
                         }
                     }
 
@@ -337,13 +352,13 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                             const bodyPart = json.schemaVersion === "1.1"
                                 ? json.left_foot ? json.footLeft : json.footRight
                                 : json.schemaVersion === "2.0"
-                                    ? json.name === "foot"
+                                    ? json.type === "foot"
                                         ? json.left_foot ? json.footLeft : json.footRight
-                                        : json.name === "head"
+                                        : json.type === "head"
                                             ? json.head
-                                            : json.name === "wrist"
+                                            : json.type === "wrist"
                                                 ? json.wrist
-                                                : json.name === "object"
+                                                : json.type === "object"
                                                     ? json.object
                                                     : null
                                     : null
