@@ -39,7 +39,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.1.1-1.5"
+        #VykingMixinVersion = "3.1.1-1.6"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
