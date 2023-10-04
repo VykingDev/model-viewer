@@ -431,7 +431,7 @@ configuration or device capabilities');
             const iframe = document.createElement('iframe')
             iframe.id = 'vto-iframe'
             iframe.referrerPolicy = 'origin'
-            iframe.allow = 'camera;fullscreen;'
+            iframe.allow = "camera 'self'"
             // iframe.sandbox.add('allow-same-origin')
             // iframe.sandbox.add('allow-scripts')
             // iframe.sandbox.add('allow-modals')
