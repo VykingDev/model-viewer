@@ -1,0 +1,6 @@
+site_name: Vyking Extension to Google's model-viewer
+site_url: 'https://sneaker-window.vyking.io/vyking-model-viewer/docs'
+site_dir: 'dist/docs'
+use_directory_urls: false
+nav:
+  - Home: index.md

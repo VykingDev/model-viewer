@@ -826,7 +826,6 @@ body {
                     console.info('Licence expiry date: ' + data.expiryTime.toString())
                     //If close to licence expiry reload the configuration file ready for next time
                     if (data.expiryTime.getTime() - new Date().getTime() < 1 * 24 * 60 * 60 * 1000) {
-                        alert('Expiry date: ' + data.expiryTime.toString())
                         fetch(configUri, {
                             method: 'GET',
                             cache: 'reload',
