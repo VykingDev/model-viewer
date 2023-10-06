@@ -54,7 +54,7 @@ Enable the VTO share feature.  This uses the navigator.share facility, if suppor
 ## vto-share-quality
 The VTO's share feature generates an 'image/jpeg' image of the rendered canvas using the Canvas.toDataURL method. The share-quality attribute is used as the method's quality parameter.
 ## vto-status
-This read-only attribute enables DOM content to be styled based on the status of the VTO presentation (see the vto-status event for possible values).
+This read-only attribute enables DOM content to be styled based on the status of the VTO presentation (see the vto-status event for possible values). Typically to enlarge the model-viewer element so that the VTO experience takes up more, if not most, of the screen.
 
 # Events
 ## vto-status
