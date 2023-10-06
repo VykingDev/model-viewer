@@ -12,7 +12,9 @@
     "clean": "./node_modules/.bin/lerna run clean --stream",
     "build": "./node_modules/.bin/lerna run build --stream",
     "serve": "./node_modules/.bin/http-server --cors -c-1 -S -C ~/Certificates/localhost.dev.cert -K ~/Certificates/localhost.dev.key",
-    "update:package-lock": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean"
+    "update:package-lock": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean",
+    "serve-docs": "mkdocs serve",
+    "docs": "mkdocs build"
   },
   "husky": {
     "hooks": {
