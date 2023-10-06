@@ -123,7 +123,17 @@ if (NODE_ENV !== 'development') {
   });
 
   // Minified Versions
-  plugins = [...plugins, terser()];
+  plugins = [...plugins, terser({
+    "compress": {
+      "pure_funcs": [
+        "console.log"
+      ]
+    },
+    "mangle": true,
+    "format": {
+      "comments": false
+    }
+  })];
 
   outputOptions.push({
     input: './dist/model-viewer.js',
