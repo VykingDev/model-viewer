@@ -76,7 +76,7 @@ export declare interface VTOInterface {
     vtoStats: boolean;
     vtoDebug: boolean;
     readonly canActivateVTO: boolean;
-    readonly VTOElement?: HTMLElement;
+    readonly VTOElement?: Element | null;
     readonly VTOMode: VTOMode;
     activateVTO(): void;
     deactivateVTO(): void;
@@ -183,10 +183,10 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         get VTOElement() {
             console.log(`VTOElement`)
 
-            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null
+            const vto = this.shadowRoot?.querySelector('#vto-iframe') as HTMLIFrameElement | null | undefined
             switch (this[$vtoMode]) {
                 case VTOMode.VYKING_VTO_VYKING_APPAREL:
-                    return vto?.contentWindow?.document.querySelector('vyking-apparel') as HTMLElement | undefined
+                    return vto?.contentWindow?.document?.querySelector('vyking-apparel')
                 case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
                     return vto?.contentWindow as HTMLElement | undefined
                 default:
@@ -436,6 +436,21 @@ configuration or device capabilities');
             // iframe.sandbox.add('allow-scripts')
             // iframe.sandbox.add('allow-modals')
             iframe.setAttribute("style", "top:0; left:0; border:0; margin:0; padding:0; height:100%; width:100%;");
+            iframe.onload = () => {
+                const status = this.#isDisabled ? VTOStatus.PRESENTING_QRCODE : VTOStatus.PRESENTING
+                this.setAttribute('vto-status', status);
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+            }
+            iframe.onerror = () => {
+                const status = VTOStatus.FAILED
+                this.setAttribute('vto-status', status);
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+            }
+            iframe.onabort = () => {
+                const status = VTOStatus.FAILED
+                this.setAttribute('vto-status', status);
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+            }
             iframe.srcdoc = this[$vtoMode] === VTOMode.VYKING_VTO_VYKING_APPAREL
                 ? escapeHTML(this.#vykingApparelTemplate(HTMLVykingApparelElement)).textContent!
                 : escapeHTML(this.sneakerWindowTemplate()).textContent!
@@ -444,10 +459,6 @@ configuration or device capabilities');
 
             container.prepend(iframe);
             container.classList.add('enabled')
-
-            const status = this.#isDisabled ? VTOStatus.PRESENTING_QRCODE : VTOStatus.PRESENTING
-            this.setAttribute('vto-status', status);
-            this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));
 
             const exitButton = this.shadowRoot!.querySelector('.slot.exit-webxr-ar-button') as HTMLElement;
             const onExit = () => {
@@ -586,6 +597,23 @@ configuration or device capabilities');
         <canvas slot="canvas">Virtual Try On</canvas>
         ${config.html ?? ''}
     </vyking-apparel>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            customElements.whenDefined('vyking-apparel')
+                .then(() => {
+                    const vykingApparel = document.getElementById('vyking-apparel')
+
+                    if (vykingApparel != null) {
+                        vykingApparel.addEventListener('imageprocessorchanged', it => {
+                            if (!it.detail.success) {
+                               alert('Failed to load the image processor. ' + it.detail.cause?.cause ?? it.detail.cause)
+                            }
+                        })
+                    }
+                })
+        })
+    </script>
 </body>
 
 </html>
@@ -824,13 +852,6 @@ body {
                 // Information message indicating licence expiry time
                 case 'VYKING_SNEAKER_WINDOW_EXPIRY_TIME':
                     console.info('Licence expiry date: ' + data.expiryTime.toString())
-                    //If close to licence expiry reload the configuration file ready for next time
-                    if (data.expiryTime.getTime() - new Date().getTime() < 1 * 24 * 60 * 60 * 1000) {
-                        fetch(configUri, {
-                            method: 'GET',
-                            cache: 'reload',
-                        })
-                    }
                     break
                 // VykingSneakerWindow is now running and ready for instructions
                 case 'VYKING_SNEAKER_WINDOW_READY':
