@@ -2,22 +2,33 @@ Release procedure
 
 
 Update VykingMixinVersion in vyking.ts in package.json
+Update docs
+Run: npm run docs
 Run: npm run build
 
 git add and commit whats checked out.
 get checkout -b <release-VERSION>
+Run: npm run docs
 Run: npm run build
-Copy "dist" folder to release folder: ../release/<model-viewer version number>
+Copy "dist/docs" folder into "packages/model-viewer/dist" folder
+Copy "packages/model-viewer/dist" folder to release folder: ../release/<model-viewer version number>
 Rename "dist" to the release version number (eg v3.1.1-1.4)
 
 Deploy to AWS
 
 Login to AWS
-TO DO but will probably create a version number folder tree for each release and put model-viewer.min.js in it. will
-probably also have a latest version in the directory above. eg "3.1.1/1.4/model-viewer.min.js" and appropriate latests version
-at each point in the tree.
-
-Upgrade appropriate examples.
+Go to s3 folder: vyking-sneaker-window/vyking-model-viewer/3.1.1/
+Upload release just made, but only copying the model-viewer.min.js file.
+Test release by replacing 
+    <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/model-viewer.min.js"></script>
+in vykingSneakerWindow/test/model-viewer-catalog-example.html with 
+    <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/3.1.1/VERSION/model-viewer.min.js"></script>
+Go to s3 folder: vyking-sneaker-window/vyking-model-viewer
+Create a folder in the "backup" folder with today's date.
+Copy model-viewer.min.js into this folder.
+Upload latest release's model-viewer.min.j file to replace the current one.
+Upgrade docs by uploading new docs folder over the top of the existing one.
+Upgrade appropriate examples from VykingSneakerWindow.
 
 Commit new release to git
 
