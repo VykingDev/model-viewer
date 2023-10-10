@@ -44,4 +44,16 @@ git merge master (Should say Already up to date.)
 
 Notes
 
-Need to sync with Google's upstream model-viewer regularly.
+Need to sync with Google's upstream model-viewer regularly. Depending on how much has changed you may want to
+do this in a separate clone. You cannot --depth=1 with this clone, because it will not allow the merge.
+
+git remote -v
+This should show an upstream remote to Google's model-viewer:
+    upstream	git@github.com:google/model-viewer.git (fetch)
+    upstream	git@github.com:google/model-viewer.git (push)   
+If not run: git remote add upstream  git@github.com:google/model-viewer.git
+git fetch upstream
+
+When on dev branch: git checkout -b dev-upstream-merge
+ git merge upstream/master
+ Fix the conflicts.
