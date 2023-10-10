@@ -56,4 +56,5 @@ git fetch upstream
 
 When on dev branch: git checkout -b dev-upstream-merge
  git merge upstream/master
- Fix the conflicts.
+ Fix the conflicts. If there are a lot of conflicts in package-lock.json then just resolve them all to the new changes and
+ then run: npm run update:package-lock.

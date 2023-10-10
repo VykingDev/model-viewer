@@ -32,9 +32,9 @@ export declare interface ThreeDOMElementMap {
 }
 
 /** A 2D Cartesian coordinate */
-export interface Vector2 {
-  x: number;
-  y: number;
+export interface Vector2DInterface {
+  u: number;
+  v: number;
 }
 
 /**
@@ -115,6 +115,61 @@ export declare interface Material {
   getDoubleSided(): boolean;
   setAlphaMode(alphaMode: AlphaMode): void;
   getAlphaMode(): AlphaMode;
+
+  /**
+   * PBR Next properties.
+   */
+  readonly emissiveStrength: number;
+  readonly clearcoatFactor: number;
+  readonly clearcoatRoughnessFactor: number;
+  readonly clearcoatTexture: TextureInfo;
+  readonly clearcoatRoughnessTexture: TextureInfo;
+  readonly clearcoatNormalTexture: TextureInfo;
+  readonly clearcoatNormalScale: number;
+  readonly ior: number;
+  readonly sheenColorFactor: Readonly<RGB>;
+  readonly sheenColorTexture: TextureInfo;
+  readonly sheenRoughnessFactor: number;
+  readonly sheenRoughnessTexture: TextureInfo;
+  readonly transmissionFactor: number;
+  readonly transmissionTexture: TextureInfo;
+  readonly thicknessFactor: number;
+  readonly thicknessTexture: TextureInfo;
+  readonly attenuationDistance: number;
+  readonly attenuationColor: Readonly<RGB>;
+  readonly specularFactor: number;
+  readonly specularTexture: TextureInfo;
+  readonly specularColorFactor: Readonly<RGB>;
+  readonly specularColorTexture: TextureInfo;
+  readonly iridescenceFactor: number;
+  readonly iridescenceTexture: TextureInfo;
+  readonly iridescenceIor: number;
+  readonly iridescenceThicknessMinimum: number;
+  readonly iridescenceThicknessMaximum: number;
+  readonly iridescenceThicknessTexture: TextureInfo;
+  readonly anisotropyStrength: number;
+  readonly anisotropyRotation: number;
+  readonly anisotropyTexture: TextureInfo;
+
+  setEmissiveStrength(emissiveStrength: number): void;
+  setClearcoatFactor(clearcoatFactor: number): void;
+  setClearcoatRoughnessFactor(clearcoatRoughnessFactor: number): void;
+  setClearcoatNormalScale(clearcoatNormalScale: number): void;
+  setIor(ior: number): void;
+  setSheenColorFactor(rgb: RGB|string): void;
+  setSheenRoughnessFactor(roughness: number): void;
+  setTransmissionFactor(transmission: number): void;
+  setThicknessFactor(thickness: number): void;
+  setAttenuationDistance(attenuationDistance: number): void;
+  setAttenuationColor(rgb: RGB|string): void;
+  setSpecularFactor(specularFactor: number): void;
+  setSpecularColorFactor(rgb: RGB|string): void;
+  setIridescenceFactor(iridescence: number): void;
+  setIridescenceIor(ior: number): void;
+  setIridescenceThicknessMinimum(thicknessMin: number): void;
+  setIridescenceThicknessMaximum(thicknessMax: number): void;
+  setAnisotropyStrength(strength: number): void;
+  setAnisotropyRotation(rotation: number): void;
 
   /**
    * The PBRMetallicRoughness configuration of the material.
@@ -279,12 +334,12 @@ export declare interface Sampler {
   /**
    * The texture scale.
    */
-  readonly scale: Vector2|null;
+  readonly scale: Vector2DInterface|null;
 
   /**
    * The texture offset.
    */
-  readonly offset: Vector2|null;
+  readonly offset: Vector2DInterface|null;
 
   /**
    * Configure the minFilter value of the Sampler.
@@ -316,12 +371,12 @@ export declare interface Sampler {
    * Sets the texture scale, or resets it to (1, 1) if argument is null.
    * As the scale value increases, the repetition of the texture will increase.
    */
-  setScale(scale: Vector2|null): void;
+  setScale(scale: Vector2DInterface|null): void;
 
   /**
    * Sets the texture offset, or resets it to (0, 0) if argument is null.
    */
-  setOffset(offset: Vector2|null): void;
+  setOffset(offset: Vector2DInterface|null): void;
 }
 
 

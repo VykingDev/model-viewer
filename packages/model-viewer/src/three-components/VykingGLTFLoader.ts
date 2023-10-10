@@ -9,7 +9,7 @@ export class VykingGLTFLoader extends GLTFLoader {
 	#key: string = 'Pit3O9d:v2AqL.Ew1sgW6NXcrX=A5kFw'
     #iv: string = 'ao39xh239756/k5='
 
-	load(url: string, onLoad: (gltf: GLTF) => void, onProgress?: ((event: ProgressEvent<EventTarget>) => void) | undefined, onError?: ((event: ErrorEvent) => void) | undefined) {
+	load(url: string, onLoad: (gltf: GLTF) => void, onProgress?: ((event: ProgressEvent<EventTarget>) => void) | undefined, onError?: ((error: Error) => void) | undefined) {
 		const scope = this
 		let resourcePath: string
 
@@ -26,10 +26,9 @@ export class VykingGLTFLoader extends GLTFLoader {
 		// be incorrect, but ensures manager.onLoad() does not fire early.
 		this.manager.itemStart(url)
 
-		const _onError = function (e: ErrorEvent) {
-
+		const _onError = function (e: unknown) {
 			if (onError) {
-				onError(e)
+				onError(e instanceof Error ? e : new Error('VykingGLTFLoader load error.'))
 			} else {
 				console.error(e);
 			}

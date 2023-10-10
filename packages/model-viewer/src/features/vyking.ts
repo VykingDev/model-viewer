@@ -39,7 +39,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.1.1-1.7"
+        #VykingMixinVersion = "3.3.0-1.8beta"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -63,18 +63,15 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
          * @param url Offsets.json file to load from
          * @param onError 
          */
-        #loadFromOffsetsJson = (url: string, onError?: ((event: ErrorEvent) => void) | undefined) => {
+        #loadFromOffsetsJson = (url: string, onError?: ((error: Error) => void) | undefined) => {
             console.log(`#loadFromOffsetsJson`)
 
-            const _onError = function (e: ErrorEvent) {
+            const _onError = function (e: unknown) {
                 if (onError) {
-                    onError(e)
+                    onError(e instanceof Error ? e : new Error('VykingModelViewerElement load error.'))
                 } else {
                     console.error(e);
                 }
-
-                // scope.manager.itemError(url)
-                // scope.manager.itemEnd(url)
             }
 
             const loader = new FileLoader()
