@@ -12,17 +12,17 @@ Run: npm run docs
 Run: npm run build
 Copy "dist/docs" folder into "packages/model-viewer/dist" folder
 Copy "packages/model-viewer/dist" folder to release folder: ../release/<model-viewer version number>
-Rename "dist" to the release version number (eg v3.1.1-1.4)
+Rename "dist" to the release version number (eg v3.3.0-1.7)
 
 Deploy to AWS
 
 Login to AWS
-Go to s3 folder: vyking-sneaker-window/vyking-model-viewer/3.1.1/
+Go to s3 folder: vyking-sneaker-window/vyking-model-viewer/3.3.0/
 Upload release just made, but only copying the model-viewer.min.js file.
 Test release by replacing 
     <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/model-viewer.min.js"></script>
 in vykingSneakerWindow/test/model-viewer-catalog-example.html with 
-    <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/3.1.1/VERSION/model-viewer.min.js"></script>
+    <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/3.3.0/VERSION/model-viewer.min.js"></script>
 Go to s3 folder: vyking-sneaker-window/vyking-model-viewer
 Create a folder in the "backup" folder with today's date.
 Copy model-viewer.min.js into this folder.
