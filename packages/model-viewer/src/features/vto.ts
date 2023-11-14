@@ -253,9 +253,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             super.update(changedProperties);
 
             if (changedProperties.has('vtoModes')) {
-                console.log(`steve ${this.vtoModes}`)
                 this[$vtoModes] = deserializeVTOModes(this.vtoModes);
-                console.log(`steve2 %o`, this[$vtoModes])
             }
 
             // Reflect any property changes into the VTO before the model-viewer because changes to
