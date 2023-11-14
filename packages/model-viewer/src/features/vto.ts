@@ -16,6 +16,7 @@ export interface VykingApparelGlobalConfig {
     disabledQRCodeUrl?: string
     disabledQRCodeCaption?: string
     powerPreference?: "high-performance" | "low-power" | "default"
+    useVykWebViewCamera?: boolean
     style?: string
     html?: string
 }
@@ -120,6 +121,14 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
                 case VTOMode.VYKING_VTO_SNEAKER_WINDOW:
                     if (vto != null && this.vtoVykWebViewPort !== 0) {
                         (vto.contentWindow as any)?.postConfigForSocket?.(this.vtoAutoCameraWidth, this.vtoAutoCameraHeight, this.vtoVykWebViewPort)
+                    }
+                    break;
+                case VTOMode.VYKING_VTO_VYKING_APPAREL:
+                    if (vto != null && this.vtoVykWebViewPort !== 0) {
+                        const vykingApparel = vto?.contentWindow?.document?.querySelector('vyking-apparel') as any
+                        if (vykingApparel != null) {
+                            vykingApparel.autocameraInAppSrc = `wss://localhost:${this.vtoVykWebViewPort}`
+                        }
                     }
                     break;
                 default:
@@ -244,7 +253,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
             super.update(changedProperties);
 
             if (changedProperties.has('vtoModes')) {
+                console.log(`steve ${this.vtoModes}`)
                 this[$vtoModes] = deserializeVTOModes(this.vtoModes);
+                console.log(`steve2 %o`, this[$vtoModes])
             }
 
             // Reflect any property changes into the VTO before the model-viewer because changes to
@@ -386,13 +397,12 @@ configuration or device capabilities');
             if (this.vto && (!this.#isDisabled || (this.#isDisabled && this.#disabledQRCodeUrl != null))) {
                 if (this[$vykingSrc] != null) {
                     for (const value of this[$vtoModes]) {
-                        if (value === 'sneakerwindow' &&
-                            IS_VYKING_VTO_CANDIDATE) {
+                        if (value === 'sneakerwindow' && IS_VYKING_VTO_CANDIDATE) {
                             vtoMode = VTOMode.VYKING_VTO_SNEAKER_WINDOW;
                             break;
                         }
 
-                        if (value === 'vyking' && IS_VYKING_VTO_CANDIDATE && this.vtoConfig != null && this.vtoKey != null) {
+                        if (value === 'vyking' && IS_VYKING_VTO_CANDIDATE/* && this.vtoConfig != null && this.vtoKey != null*/) {
                             vtoMode = VTOMode.VYKING_VTO_VYKING_APPAREL;
                             break;
                         }
@@ -424,8 +434,7 @@ configuration or device capabilities');
             this[$scene].reset()
 
             const escapeHTML = (text: string) => document.createTextNode(text)
-            const HTMLVykingApparelElement: VykingApparelGlobalConfig =
-                (self as any).HTMLVykingApparelElement || {}
+            const HTMLVykingApparelElement: VykingApparelGlobalConfig = (self as any).HTMLVykingApparelElement || {}
             const container = this.shadowRoot!.querySelector('#default-vto') as HTMLElement
 
             const iframe = document.createElement('iframe')
@@ -439,17 +448,17 @@ configuration or device capabilities');
             iframe.onload = () => {
                 const status = this.#isDisabled ? VTOStatus.PRESENTING_QRCODE : VTOStatus.PRESENTING
                 this.setAttribute('vto-status', status);
-                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));
             }
             iframe.onerror = () => {
                 const status = VTOStatus.FAILED
                 this.setAttribute('vto-status', status);
-                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));
             }
             iframe.onabort = () => {
                 const status = VTOStatus.FAILED
                 this.setAttribute('vto-status', status);
-                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));    
+                this.dispatchEvent(new CustomEvent<VTOStatus>('vto-status', { detail: status }));
             }
             iframe.srcdoc = this[$vtoMode] === VTOMode.VYKING_VTO_VYKING_APPAREL
                 ? escapeHTML(this.#vykingApparelTemplate(HTMLVykingApparelElement)).textContent!
@@ -476,7 +485,7 @@ configuration or device capabilities');
 
                 //Re-applying vyking-src now we are not presenting will allow the 
                 //model-viewer to update
-                const tmp = this.getAttribute('vyking-src') 
+                const tmp = this.getAttribute('vyking-src')
                 this.removeAttribute('vyking-src')
                 if (tmp != null) {
                     this.setAttribute('vyking-src', tmp)
@@ -499,12 +508,15 @@ configuration or device capabilities');
         #onExit?: () => any
 
         #vykingApparelTemplate = (config: VykingApparelGlobalConfig) => {
+            console.log(`VTOModelViewerElement.openIframeViewer config: %o`, config)
+
             const toVykingApparelGlobalConfigString = (config: VykingApparelGlobalConfig) =>
-            'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
-                .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
-                .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
-                .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
-                .concat(config.powerPreference != null ? `        self.HTMLVykingApparelElement.powerPreference = "${config.powerPreference}";\n` : '')
+                'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
+                    .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
+                    .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
+                    .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
+                    .concat(config.powerPreference != null ? `        self.HTMLVykingApparelElement.powerPreference = "${config.powerPreference}";\n` : '')
+                    .concat(config.useVykWebViewCamera != null ? `        self.HTMLVykingApparelElement.useVykWebViewCamera = ${config.useVykWebViewCamera};\n` : '')
 
             const getURL = (parentUrl: string, name: string) => {
                 // console.log(`getURL: ${parentUrl}, ${name}`)
@@ -593,7 +605,6 @@ configuration or device capabilities');
         ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
         ${this.withCredentials ? 'with-credentials' : ''}
         >
-        <video slot="src" hidden autoplay muted playsinline></video>
         <canvas slot="canvas">Virtual Try On</canvas>
         ${config.html ?? ''}
     </vyking-apparel>
@@ -605,6 +616,7 @@ configuration or device capabilities');
                     const vykingApparel = document.getElementById('vyking-apparel')
 
                     if (vykingApparel != null) {
+                        vykingApparel.autocameraInAppSrc = 'wss://localhost:' + ${this.vtoVykWebViewPort}
                         vykingApparel.addEventListener('imageprocessorchanged', it => {
                             if (!it.detail.success) {
                                alert('Failed to load the image processor. ' + it.detail.cause?.cause ?? it.detail.cause)
