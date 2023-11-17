@@ -10,15 +10,16 @@ git add and commit whats checked out.
 get checkout -b <release-VERSION>
 Run: npm run docs
 Run: npm run build
-Copy "dist/docs" folder into "packages/model-viewer/dist" folder
-Copy "packages/model-viewer/dist" folder to release folder: ../release/<model-viewer version number>
-Rename "dist" to the release version number (eg v3.3.0-1.7)
+Copy "dist/docs" folder into "packages/model-viewer/dist" folder replacing any existing docs folder.
+Copy "packages/model-viewer/dist" folder to release folder: ../release/<google model-viewer version number> (eg 3.3.0)
+Rename "dist" to the release version number (eg 1.8)
 
 Deploy to AWS
 
 Login to AWS
 Go to s3 folder: vyking-sneaker-window/vyking-model-viewer/3.3.0/
-Upload release just made, but only copying the model-viewer.min.js file.
+Create a folder of the correct version (eg 1.8)
+Upload release just made, but only copying the docs and model-viewer.min.js file into the folder just created.
 Test release by replacing 
     <script type="module" src="https://sneaker-window.vyking.io/vyking-model-viewer/model-viewer.min.js"></script>
 in vykingSneakerWindow/test/model-viewer-catalog-example.html with 
