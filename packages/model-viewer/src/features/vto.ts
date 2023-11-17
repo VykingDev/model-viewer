@@ -108,8 +108,6 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-modes' })
         vtoModes: string = DEFAULT_VTO_MODES;
 
-        // @property({ type: Number, attribute: 'vto-vykwebview-port' })
-        // vtoVykWebViewPort: number = 0;
         #vtoVykWebViewPort: number = 0;
         @property({ type: Number, attribute: 'vto-vykwebview-port' }) set vtoVykWebViewPort(newValue: number) {
             this.#vtoVykWebViewPort = newValue
