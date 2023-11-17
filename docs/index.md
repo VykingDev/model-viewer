@@ -24,6 +24,7 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
 - 3.1.1-1.6 First documented release
 - 3.1.1-1.7 Remove console.logs from minified version
 - 3.3.0-1.7 Merge upstream version 3.3.0
+- 3.3.0-1.8 Added support for future features.
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.
