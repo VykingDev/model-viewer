@@ -39,7 +39,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.8"
+        #VykingMixinVersion = "3.3.0-1.9"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -379,8 +379,10 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                         // use the legacy 'environmentMap' property, if its defined.
                         if (!this.hasAttribute('environment-image')) {
                             const prop = json['environmentMap']
-                            if (prop != null) {
+                            if (prop != null && prop !== 'envMap.jpg') {
                                 this.setAttribute('environment-image', toResourceUrl(prop, resourcePath))
+                            } else {
+                                this.setAttribute('environment-image', 'neutral')
                             }
                         }
 
