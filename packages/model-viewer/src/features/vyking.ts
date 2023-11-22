@@ -39,7 +39,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.9"
+        #VykingMixinVersion = "3.3.0-1.10alpha"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -372,7 +372,25 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                         if (prop != null) {
                             loadViewerAttributes(prop)
                         } else {
-                            loadViewerAttributes({})
+                            loadViewerAttributes({
+                                // "environmentImage": "neutral",
+                                "toneMapping": "ACESFilmicToneMapping",
+                                "exposure": 1.0,
+                                "initialCameraPosition": {
+                                    "yaw": "42.0deg",
+                                    "pitch": "60.0deg",
+                                    "distance": "auto"
+                                },
+                                "shadow": {
+                                    "shadowIntensity": 1.0,
+                                    "shadowSoftness": 1.0
+                                },
+                                "playInbuiltAnimation": false,
+                                "rotate": {
+                                    "autoRotate": true,
+                                    "rotationPerSecond": 0.1
+                                }
+                            })
                         }
 
                         // If calling loadViewerAttributes did not define the 'environment-image' attribute

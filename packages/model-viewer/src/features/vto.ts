@@ -39,6 +39,7 @@ const deserializeVTOModes = enumerationDeserializer<VTOMode>(
 const DEFAULT_VTO_MODES = 'vyking'; // Ordered list 
 const DEFAULT_VTO_VYKING_APPAREL_URL = 'https://sneaker-window.vyking.io/vyking-apparel/1/vyking-apparel.js';
 const DEFAULT_VTO_SNEAKER_WINDOW_URL = 'https://sneaker-window.vyking.io/1/index.html'
+const NEUTRAL_ENVIRONMENT_IMAGE = `https://sneaker-window.vyking.io/vyking-apparel/1/assets/images/neutral.hdr`
 
 const VTOMode: { [index: string]: VTOMode } = {
     VYKING_VTO_SNEAKER_WINDOW: 'sneakerwindow',
@@ -514,18 +515,18 @@ configuration or device capabilities');
                     .concat(config.powerPreference != null ? `        self.HTMLVykingApparelElement.powerPreference = "${config.powerPreference}";\n` : '')
                     .concat(config.useVykWebViewCamera != null ? `        self.HTMLVykingApparelElement.useVykWebViewCamera = ${config.useVykWebViewCamera};\n` : '')
 
-            const getURL = (parentUrl: string, name: string) => {
-                // console.log(`getURL: ${parentUrl}, ${name}`)
+            // const getURL = (parentUrl: string, name: string) => {
+            //     // console.log(`getURL: ${parentUrl}, ${name}`)
 
-                const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
+            //     const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
 
-                const matches = parentUrl?.match(/.+\//)
-                if (matches != null && matches.length > 0 && !isUrlAbsolute(name)) {
-                    return matches[0] + name
-                } else {
-                    return name
-                }
-            }
+            //     const matches = parentUrl?.match(/.+\//)
+            //     if (matches != null && matches.length > 0 && !isUrlAbsolute(name)) {
+            //         return matches[0] + name
+            //     } else {
+            //         return name
+            //     }
+            // }
 
             return `
 <!DOCTYPE html>
@@ -588,14 +589,15 @@ configuration or device capabilities');
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
         autocamera-framerate=${this.vtoAutoCameraFramerate}
-        default-exposure=${this[$renderer].threeRenderer.toneMappingExposure}
+        default-exposure=1.0
+        default-tone-mapping='ACESFilmicToneMapping'
+        default-environment-image='${NEUTRAL_ENVIRONMENT_IMAGE}'
         ${this.vtoFlipY ? 'flipy' : ''}
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
         ${!!this.vtoLensFactor ? 'lens-factor="' + this.vtoLensFactor + '"' : ''}
         ${!!this.vtoShareQuality ? 'share-quality="' + this.vtoShareQuality + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
-        ${!!this.getAttribute('environment-image') ? 'default-environment-image="' + getURL(self.location.href, this.getAttribute('environment-image')!) + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
         ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
         ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
