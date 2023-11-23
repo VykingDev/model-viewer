@@ -25,7 +25,7 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
 - 3.1.1-1.7 Remove console.logs from minified version
 - 3.3.0-1.7 Merge upstream version 3.3.0
 - 3.3.0-1.8 Added support for future features.
-- 3.3.0-1.9 Use the "neutral" environment image if a legacy offsets.json envMap.jpg would have been used.
+- 3.3.0.1.10 Set some default values for attributes not set by legacy offset.json files.
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.
