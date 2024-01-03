@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import {EventDispatcher, Texture, WebGLRenderer} from 'three';
-import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
-import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EventDispatcher, Texture, WebGLRenderer } from 'three';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { VykingGLTFLoader } from './VykingGLTFLoader';
-import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import ModelViewerElementBase from '../model-viewer-base.js';
-import {CacheEvictionPolicy} from '../utilities/cache-eviction-policy.js';
+import { CacheEvictionPolicy } from '../utilities/cache-eviction-policy.js';
 
 import GLTFMaterialsVariantsExtension from './gltf-instance/VariantMaterialLoaderPlugin';
-import {GLTFInstance, GLTFInstanceConstructor} from './GLTFInstance.js';
+import { GLTFInstance, GLTFInstanceConstructor } from './GLTFInstance.js';
 
 export type ProgressCallback = (progress: number) => void;
 
@@ -33,18 +33,18 @@ export type ProgressCallback = (progress: number) => void;
  * A helper to Promise-ify a Three.js GLTFLoader
  */
 export const loadWithLoader =
-    (url: string,
-     loader: GLTFLoader,
-     progressCallback: ProgressCallback = () => {}) => {
-      const onProgress = (event: ProgressEvent) => {
-        const fraction = event.loaded / event.total;
-        progressCallback!
-            (Math.max(0, Math.min(1, isFinite(fraction) ? fraction : 1)));
-      };
-      return new Promise<GLTF>((resolve, reject) => {
-        loader.load(url, resolve, onProgress, reject);
-      });
+  (url: string,
+    loader: GLTFLoader,
+    progressCallback: ProgressCallback = () => { }) => {
+    const onProgress = (event: ProgressEvent) => {
+      const fraction = event.loaded / event.total;
+      progressCallback!
+        (Math.max(0, Math.min(1, isFinite(fraction) ? fraction : 1)));
     };
+    return new Promise<GLTF>((resolve, reject) => {
+      loader.load(url, resolve, onProgress, reject);
+    });
+  };
 
 /** Helper to load a script tag. */
 const fetchScript = (src: string): Promise<Event> => {
@@ -68,7 +68,7 @@ let ktx2TranscoderLocation: string;
 const ktx2Loader = new KTX2Loader();
 
 let meshoptDecoderLocation: string;
-let meshoptDecoder: Promise<typeof MeshoptDecoder>|undefined;
+let meshoptDecoder: Promise<typeof MeshoptDecoder> | undefined;
 
 interface MeshoptDecoder {
   ready: Promise<void>;
@@ -84,9 +84,9 @@ export const $evictionPolicy = Symbol('evictionPolicy');
 const $GLTFInstance = Symbol('GLTFInstance');
 
 export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
-                                             GLTFInstanceConstructor> extends
-    EventDispatcher<
-        {'preload': {element: ModelViewerElementBase, src: String}}> {
+  GLTFInstanceConstructor> extends
+  EventDispatcher<
+    { 'preload': { element: ModelViewerElementBase, src: String } }> {
   static withCredentials: boolean;
 
   static setDRACODecoderLocation(url: string) {
@@ -111,8 +111,8 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
     if (meshoptDecoderLocation !== url) {
       meshoptDecoderLocation = url;
       meshoptDecoder = fetchScript(url)
-                           .then(() => MeshoptDecoder.ready)
-                           .then(() => MeshoptDecoder);
+        .then(() => MeshoptDecoder.ready)
+        .then(() => MeshoptDecoder);
     }
   }
 
@@ -124,8 +124,8 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
     ktx2Loader.detectSupport(renderer);
   }
 
-  static[$evictionPolicy]: CacheEvictionPolicy =
-      new CacheEvictionPolicy(CachingGLTFLoader);
+  static [$evictionPolicy]: CacheEvictionPolicy =
+    new CacheEvictionPolicy(CachingGLTFLoader);
 
   static get cache() {
     return cache;
@@ -174,11 +174,11 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
     this[$loader].setKTX2Loader(ktx2Loader);
   }
 
-  protected[$loader]: GLTFLoader = new VykingGLTFLoader().register(
-      parser => new GLTFMaterialsVariantsExtension(parser));
-  protected[$GLTFInstance]: T;
+  protected [$loader]: GLTFLoader = new VykingGLTFLoader().register(
+    parser => new GLTFMaterialsVariantsExtension(parser));
+  protected [$GLTFInstance]: T;
 
-  protected get[$evictionPolicy](): CacheEvictionPolicy {
+  protected get [$evictionPolicy](): CacheEvictionPolicy {
     return (this.constructor as typeof CachingGLTFLoader)[$evictionPolicy];
   }
 
@@ -187,33 +187,33 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
    * when the cache is populated.
    */
   async preload(
-      url: string, element: ModelViewerElementBase,
-      progressCallback: ProgressCallback = () => {}) {
+    url: string, element: ModelViewerElementBase,
+    progressCallback: ProgressCallback = () => { }) {
     this[$loader].setWithCredentials(CachingGLTFLoader.withCredentials);
-    this.dispatchEvent({type: 'preload', element: element, src: url});
+    this.dispatchEvent({ type: 'preload', element: element, src: url });
     if (!cache.has(url)) {
       if (meshoptDecoder != null) {
         this[$loader].setMeshoptDecoder(await meshoptDecoder);
       }
 
       const rawGLTFLoads =
-          loadWithLoader(url, this[$loader], (progress: number) => {
-            progressCallback(progress * 0.8);
-          });
+        loadWithLoader(url, this[$loader], (progress: number) => {
+          progressCallback(progress * 0.8);
+        });
 
       const GLTFInstance = this[$GLTFInstance];
       const gltfInstanceLoads = rawGLTFLoads
-                                    .then((rawGLTF) => {
-                                      return GLTFInstance.prepare(rawGLTF);
-                                    })
-                                    .then((preparedGLTF) => {
-                                      progressCallback(0.9);
-                                      return new GLTFInstance(preparedGLTF);
-                                    })
-                                    .catch((reason => {
-                                      console.error(reason);
-                                      return new GLTFInstance();
-                                    }));
+        .then((rawGLTF) => {
+          return GLTFInstance.prepare(rawGLTF);
+        })
+        .then((preparedGLTF) => {
+          progressCallback(0.9);
+          return new GLTFInstance(preparedGLTF);
+        })
+        .catch((reason => {
+          console.error(reason);
+          return new GLTFInstance();
+        }));
       cache.set(url, gltfInstanceLoads);
     }
 
@@ -231,22 +231,38 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
    * glTF. If the glTF has already been loaded, makes a clone of the cached
    * copy.
    */
+  // async load(
+  //     url: string, element: ModelViewerElementBase,
+  //     progressCallback: ProgressCallback = () => {}): Promise<InstanceType<T>> {
+  //   await this.preload(url, element, progressCallback);
+
+  //   const gltf = await cache.get(url)!;
+  //   const clone = await gltf.clone() as InstanceType<T>;
+
+  //   this[$evictionPolicy].retain(url);
+
+  //   // Patch dispose so that we can properly account for instance use
+  //   // in the caching layer:
+  //   clone.dispose = () => {
+  //     this[$evictionPolicy].release(url);
+  //   };
+
+  //   return clone;
+  // }
+
+  // SB 03/01/2023
+  // Don't cache & clone the gltf models as it increases the memory footprint and I don't
+  // think is releases the memory properly
   async load(
-      url: string, element: ModelViewerElementBase,
-      progressCallback: ProgressCallback = () => {}): Promise<InstanceType<T>> {
+    url: string, element: ModelViewerElementBase,
+    progressCallback: ProgressCallback = () => { }): Promise<InstanceType<T>> {
     await this.preload(url, element, progressCallback);
 
     const gltf = await cache.get(url)!;
-    const clone = await gltf.clone() as InstanceType<T>;
 
-    this[$evictionPolicy].retain(url);
+    preloaded.delete(url);
+    cache.delete(url);
 
-    // Patch dispose so that we can properly account for instance use
-    // in the caching layer:
-    clone.dispose = () => {
-      this[$evictionPolicy].release(url);
-    };
-
-    return clone;
+    return gltf as InstanceType<T>;
   }
 }
