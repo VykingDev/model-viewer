@@ -156,7 +156,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         @property({ type: String, attribute: 'vto-autocamera-height' })
         vtoAutoCameraHeight: number = 540;
 
-        @property({ type: String, attribute: 'vto-autocamera-framerate' })
+        @property({ type: String, attribute: 'vto-autocamera-frame-rate' })
         vtoAutoCameraFramerate: number = 60;
 
         @property({ type: Number, attribute: 'vto-share-quality' })
