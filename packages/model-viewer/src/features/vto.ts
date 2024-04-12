@@ -437,7 +437,7 @@ configuration or device capabilities');
             const iframe = document.createElement('iframe')
             iframe.id = 'vto-iframe'
             iframe.referrerPolicy = 'origin'
-            iframe.allow = "camera 'self'"
+            iframe.allow = "camera 'self'; web-share 'self';"
             // iframe.sandbox.add('allow-same-origin')
             // iframe.sandbox.add('allow-scripts')
             // iframe.sandbox.add('allow-modals')
@@ -589,9 +589,6 @@ configuration or device capabilities');
         autocamera-width=${this.vtoAutoCameraWidth}
         autocamera-height=${this.vtoAutoCameraHeight}
         autocamera-framerate=${this.vtoAutoCameraFramerate}
-        default-exposure=1.0
-        default-tone-mapping='ACESFilmicToneMapping'
-        default-environment-image='${NEUTRAL_ENVIRONMENT_IMAGE}'
         ${this.vtoFlipY ? 'flipy' : ''}
         ${this.vtoRotate ? 'rotate' : ''}
         ${this.vtoDisableROI ? 'rotate' : ''}
@@ -599,7 +596,7 @@ configuration or device capabilities');
         ${!!this.vtoShareQuality ? 'share-quality="' + this.vtoShareQuality + '"' : ''}
         ${!!this[$vykingSrc] ? 'apparel="' + this[$vykingSrc] + '"' : ''}
         ${!!this.vtoConfig ? 'config="' + this.vtoConfig + '"' : ''}
-        ${!!this.vtoKey ? 'key="' + this.vtoKey + '"' : ''}
+        ${!!this.vtoKey ? 'config-key="' + this.vtoKey + '"' : ''}
         ${!!this.alt ? 'alt="' + this.alt + '"' : ''}
         ${this.withCredentials ? 'with-credentials' : ''}
         >
