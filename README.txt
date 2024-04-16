@@ -1,3 +1,14 @@
+Build procedure
+
+To build: In the "model-viewer/packages" subfolder of model-viewer run: npm run build
+To run a test server: In the "model-viewer/packages" subfolder of model-viewer run: npm run serve
+
+A test page using this test server is: "https://192.168.0.20:3001/model-viewer-test.html". You will probable have to go to "https://192.168.0.20:8080" first to
+grant certificate privilege.
+The try-on button will use vyking-apparel running at https://192.168.0.20:1234. This server needs to be run using: "npm run server". Note onlu loginfo statements will
+be visible in the debugger.
+
+
 Release procedure
 
 

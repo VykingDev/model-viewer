@@ -27,6 +27,10 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
 - 3.3.0-1.8 Added support for future features.
 - 3.3.0.1.10 Set some default values for attributes not set by legacy offset.json files.
 - 3.3.0.1.11 Reduced memory footprint from the GLB object. 
+- 3.3.0.1.12
+    - Add "web-share 'self': privilege to the VTO iframe.
+    - Stopped setting vyking-apparel's default-exposure, default-tone-mapping or default-environment-image attributes.
+    - Set vyking-apparel's config-key attribute instead of it deprecated key attribute.
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.
