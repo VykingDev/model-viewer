@@ -31,6 +31,10 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     - Add "web-share 'self': privilege to the VTO iframe.
     - Stopped setting vyking-apparel's default-exposure, default-tone-mapping or default-environment-image attributes.
     - Set vyking-apparel's config-key attribute instead of it deprecated key attribute.
+- 3.3.0.1.13
+    - Added support for the vyking-apparel's share decoration attributes.
+    - Fixed a VTO memory leak.
+
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.
