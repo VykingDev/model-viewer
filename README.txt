@@ -2,6 +2,7 @@ Build procedure
 
 To build: In the "model-viewer/packages" subfolder of model-viewer run: npm run build
 To run a test server: In the "model-viewer/packages" subfolder of model-viewer run: npm run serve
+NOTE: You will get a Circular dependencies error. This can be ignored.
 
 A test page using this test server is: "https://192.168.0.20:3001/model-viewer-test.html". You will probable have to go to "https://192.168.0.20:8080" first to
 grant certificate privilege.
@@ -10,6 +11,7 @@ be visible in the debugger.
 
 
 Release procedure
+
 
 
 Update VykingMixinVersion in vyking.ts in package.json
