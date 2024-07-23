@@ -78,7 +78,6 @@ export declare interface VTOInterface {
     vtoStats: boolean;
     vtoDebug: boolean;
     readonly canActivateVTO: boolean;
-    readonly VTOElement?: Element | null;
     readonly VTOMode: VTOMode;
     activateVTO(): void;
     deactivateVTO(): void;
@@ -470,7 +469,8 @@ configuration or device capabilities');
             const onExit = () => {
                 this.#onExit = undefined
 
-                container.removeChild(iframe)
+                iframe.contentWindow?.document.getElementById('vyking-apparel')?.remove()
+                iframe.remove()
 
                 if (exitButton != null) {
                     exitButton.classList.remove('enabled');
