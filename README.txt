@@ -44,6 +44,13 @@ Upload latest release's model-viewer.min.j file to replace the current one.
 Upgrade docs by uploading new docs folder over the top of the existing one.
 Upgrade appropriate examples from VykingSneakerWindow.
 
+To Update Cloudfront with latest release
+Go to Cloudfront
+Select distribution E33UIF1FTFSRE2
+Go to the Invalidatins tab
+Create a new invalidation containing: /vyking-model-viewer/model-viewer.min.js
+
+
 Commit new release to git
 
 When on release branch:
