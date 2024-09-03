@@ -30,7 +30,10 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
             this[$vykingSrc] = newValue
             if (newValue != null) {
-                this.#loadFromOffsetsJson(newValue, () => { })
+                this.#loadFromOffsetsJson(newValue, (error: Error) => {
+                    this.dispatchEvent(new CustomEvent(
+                        'error', {detail: {type: 'loadfailure', sourceError: error}}));
+                 })
             } else {
                 this.src = null
             }
@@ -39,7 +42,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.13"
+        #VykingMixinVersion = "3.3.0-1.14"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
