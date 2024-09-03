@@ -469,7 +469,7 @@ configuration or device capabilities');
             const onExit = () => {
                 this.#onExit = undefined
 
-                iframe.contentWindow?.document.getElementById('vyking-apparel')?.remove()
+                // iframe.contentWindow?.document.getElementById('vyking-apparel')?.remove()
                 iframe.remove()
 
                 if (exitButton != null) {
