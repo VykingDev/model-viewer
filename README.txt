@@ -13,7 +13,7 @@ be visible in the debugger.
 Release procedure
 
 
-
+In the "model-viewer/packages" subfolder of model-viewer
 Update VykingMixinVersion in vyking.ts in package.json
 Update docs
 Run: npm run docs

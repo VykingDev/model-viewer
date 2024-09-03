@@ -34,6 +34,8 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
 - 3.3.0.1.13
     - Added support for the vyking-apparel's share decoration attributes.
     - Fixed a VTO memory leak.
+- 3.3.0.1.14
+    - Now dispatch an error event with detail.type set to "loadfailure" when the loading of the offsets.json file fails.
 
 # Attributes
 ## vto
