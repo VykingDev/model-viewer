@@ -32,8 +32,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             if (newValue != null) {
                 this.#loadFromOffsetsJson(newValue, (error: Error) => {
                     this.dispatchEvent(new CustomEvent(
-                        'error', {detail: {type: 'loadfailure', sourceError: error}}));
-                 })
+                        'error', { detail: { type: 'loadfailure', sourceError: error } }));
+                })
             } else {
                 this.src = null
             }
@@ -349,20 +349,23 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                         loadStatsProperties(json)
 
                         {
-                            const bodyPart = json.schemaVersion === "1.1"
-                                ? json.left_foot ? json.footLeft : json.footRight
-                                : json.schemaVersion === "2.0"
-                                    ? json.type === "foot"
-                                        ? json.left_foot ? json.footLeft : json.footRight
-                                        : json.type === "head"
-                                            ? json.head
-                                            : json.type === "wrist"
-                                                ? json.wrist
-                                                : json.type === "object"
-                                                    ? json.object
-                                                    : null
-                                    : null
-                            const prop = bodyPart?.apparel[0]?.glb_uri
+                            let prop = json.viewer_model
+                            if (prop == null) {
+                                const bodyPart = json.schemaVersion === "1.1"
+                                    ? json.left_foot ? json.footLeft : json.footRight
+                                    : json.schemaVersion === "2.0"
+                                        ? json.type === "foot"
+                                            ? json.left_foot ? json.footLeft : json.footRight
+                                            : json.type === "head"
+                                                ? json.head
+                                                : json.type === "wrist"
+                                                    ? json.wrist
+                                                    : json.type === "object"
+                                                        ? json.object
+                                                        : null
+                                        : null
+                                prop = bodyPart?.apparel[0]?.glb_uri
+                            }
 
                             if (prop != null) {
                                 this.setAttribute('src', toResourceUrl(prop, resourcePath))
