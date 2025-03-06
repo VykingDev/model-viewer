@@ -140,6 +140,8 @@ canvas {
   background-color: #fff0;
 }
 
+/*
+VYKING 04/03/2025 Replace default progress bar
 #default-progress-bar {
   display: block;
   position: relative;
@@ -163,6 +165,35 @@ canvas {
 }
 
 #default-progress-bar > .bar.hide {
+  transition: opacity 0.3s 1s;
+  opacity: 0;
+}
+*/
+#default-progress-bar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background:  #D9D9D9CC;
+  padding: 20px;
+  border-radius: 10px;
+  color: black;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#default-progress-bar > .bar {
+  width: 100%;
+  height: var(--progress-bar-height, 3px);
+  background-color: var(--progress-bar-color, black);
+  transition: transform 0.09s;
+  transform-origin: top left;
+  transform: scaleX(0);
+  overflow: hidden;
+}
+
+#default-progress-bar.hide {
   transition: opacity 0.3s 1s;
   opacity: 0;
 }
@@ -390,9 +421,20 @@ canvas {
     <div id="default-vto" part="default-vto" aria-hidden="true">
     </div>
 
+    <!--
+    // VYKING 04/03/2025 Replace default progress bar
     <div class="slot progress-bar">
       <slot name="progress-bar">
         <div id="default-progress-bar" aria-hidden="true">
+          <div class="bar" part="default-progress-bar"></div>
+        </div>
+      </slot>
+    </div>
+    -->
+    <div class="slot progress-bar">
+      <slot name="progress-bar">
+        <div id="default-progress-bar" aria-hidden="true">
+          <div>Loading... <span id="default-progress-text" part="default-progress-text">0%</span></div>
           <div class="bar" part="default-progress-bar"></div>
         </div>
       </slot>
