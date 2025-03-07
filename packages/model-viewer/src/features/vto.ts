@@ -237,6 +237,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         disconnectedCallback() {
             super.disconnectedCallback();
 
+            this[$vtoButtonContainer].removeEventListener(
+                'click', this[$onVTOButtonContainerClick])
+  
             //   this[$renderer].arRenderer.removeEventListener(
             //       'status', this[$onVTOStatus]);
             //   this[$renderer].arRenderer.removeEventListener(
