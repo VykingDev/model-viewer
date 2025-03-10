@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {html, render} from 'lit';
+import { html, render } from 'lit';
 
 import CloseIcon from './assets/close-material-svg.js';
 import ControlsPrompt from './assets/controls-svg.js';
@@ -320,6 +320,44 @@ canvas {
 #default-exit-webxr-ar-button > svg {
   fill: #fff;
 }
+
+.slot.view-toggles:not(.enabled) {
+  display: none;
+}
+
+#default-view-toggles {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 5px;
+    width: 100px;
+    justify-content: space-between;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.toggle-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ccc;
+    position: relative;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.toggle-option.selected {
+    background: black;
+    border: 2px solid white;
+    outline: 2px solid black;
+    transform: scale(1.2);
+}
 </style>
 <div class="container">
   <div class="userInput" tabindex="0" role="img"
@@ -384,6 +422,13 @@ canvas {
     </slot>
   </div>
 
+  <div class="slot view-toggles">
+    <slot name="view-toggles">
+        <div id="default-view-toggles" part="default-view-toggles">
+        </div>
+    </slot>
+  </div>
+
   <div class="slot default">
     <slot></slot>
 
@@ -397,7 +442,7 @@ canvas {
         </div>
       </slot>
     </div>
-
+    
     <div class="slot exit-webxr-ar-button">
       <slot name="exit-webxr-ar-button">
         <a id="default-exit-webxr-ar-button" part="default-exit-webxr-ar-button"

@@ -237,6 +237,9 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
         disconnectedCallback() {
             super.disconnectedCallback();
 
+            this[$vtoButtonContainer].removeEventListener(
+                'click', this[$onVTOButtonContainerClick])
+                
             //   this[$renderer].arRenderer.removeEventListener(
             //       'status', this[$onVTOStatus]);
             //   this[$renderer].arRenderer.removeEventListener(
@@ -507,11 +510,15 @@ configuration or device capabilities');
         #vykingApparelTemplate = (config: VykingApparelGlobalConfig) => {
             console.log(`VTOModelViewerElement.openIframeViewer config: %o`, config)
 
+            const escapeHTML = (text: string) =>  {
+                return text.replace(/"/g, "&quot;")
+            }
+
             const toVykingApparelGlobalConfigString = (config: VykingApparelGlobalConfig) =>
                 'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
                     .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
                     .concat(config.disabledQRCodeUrl != null ? `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${config.disabledQRCodeUrl}";\n` : `        self.HTMLVykingApparelElement.disabledQRCodeUrl = "${self.location.href}";\n`)
-                    .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${config.disabledQRCodeCaption}";\n` : '')
+                    .concat(config.disabledQRCodeCaption != null ? `        self.HTMLVykingApparelElement.disabledQRCodeCaption = "${escapeHTML(config.disabledQRCodeCaption)}";\n` : '')
                     .concat(config.powerPreference != null ? `        self.HTMLVykingApparelElement.powerPreference = "${config.powerPreference}";\n` : '')
                     .concat(config.useVykWebViewCamera != null ? `        self.HTMLVykingApparelElement.useVykWebViewCamera = ${config.useVykWebViewCamera};\n` : '')
 

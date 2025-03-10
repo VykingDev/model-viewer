@@ -13,6 +13,14 @@ export declare interface VykingInterface {
     vykingSrc: string | null;
 }
 
+// Define the type for view points
+type ViewPoint = {
+    orbit: string;
+    target: string;
+};
+
+type ViewPoints = Array<ViewPoint>
+
 export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
     ModelViewerElement: T): Constructor<VykingInterface> & T => {
 
@@ -32,8 +40,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             if (newValue != null) {
                 this.#loadFromOffsetsJson(newValue, (error: Error) => {
                     this.dispatchEvent(new CustomEvent(
-                        'error', {detail: {type: 'loadfailure', sourceError: error}}));
-                 })
+                        'error', { detail: { type: 'loadfailure', sourceError: error } }));
+                })
             } else {
                 this.src = null
             }
@@ -42,7 +50,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.14"
+        #VykingMixinVersion = "3.3.0-1.15alpha"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -242,6 +250,86 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                             this.setAttribute('camera-orbit', `${yaw} ${pitch} ${distance}`)
                         } else {
                             this.removeAttribute('camera-orbit')
+                        }
+                    }
+
+                    {
+                        // const json = {
+                        //     "toggle_views": {
+                        //         "showToggle": true,
+                        //         "views": [
+                        //             {
+                        //                 "orbit": "0deg 75deg 105%",
+                        //                 "target": "auto"
+                        //             },
+                        //             {
+                        //                 "orbit": "-62.78deg 59.47deg 40%",
+                        //                 "target": "-0.14m 0.08m 0.01m"
+                        //             },
+                        //             {
+                        //                 "orbit": "52.55deg 67.68deg 70%",
+                        //                 "target": "0.07m 0.06m 0.02m"
+                        //             }
+                        //         ]
+                        //     }
+                        // }
+
+                        const toggleViewSlot = this.shadowRoot!.querySelector('.slot.view-toggles') as HTMLElement
+                        if (toggleViewSlot != null) {
+                            toggleViewSlot.classList.remove(`enabled`)
+                        }
+                        const toggleProps = json['toggle_views']
+                        if (toggleProps != null && toggleProps.showToggle === true) {
+                            toggleViewSlot.classList.add(`enabled`)
+                        }
+
+                        const toggleView = this.shadowRoot!.querySelector('#default-view-toggles') as HTMLElement
+                        if (toggleView != null) {
+                            const viewPoints: ViewPoints = json.toggle_views.views
+
+                            toggleView.onclick = (event: MouseEvent) => {
+                                const target = event?.target
+                                if (target instanceof HTMLElement && target.classList.contains('toggle-option')) {
+                                    const view = Number(target.getAttribute('data-view'))
+                                    if (view == null) {
+                                        return
+                                    }
+
+                                    this.removeAttribute('auto-rotate')
+
+                                    // Update camera position
+                                    const viewPoint = viewPoints[view];
+                                    this.setAttribute('camera-orbit', viewPoint.orbit)
+                                    this.setAttribute('camera-target', viewPoint.target)
+
+                                    // Update active button state
+                                    const toggleOptions = this.shadowRoot!.querySelectorAll('.toggle-option')
+                                    toggleOptions.forEach(option => {
+                                        option.classList.remove('selected');
+                                    });
+                                    target.classList.add('selected');
+                                }
+                            }
+
+                            while (toggleView.firstChild) {
+                                toggleView.firstChild.remove()
+                            }
+
+                            if (toggleProps != null) {
+                                let dataView = 0
+                                toggleProps.views.forEach(() => {
+                                    const div = document.createElement('HTMLDivElement') as HTMLDivElement
+                                    div.classList.add('toggle-option')
+                                    div.setAttribute('data-view', dataView.toString())
+                                    // if (dataView === 0) {
+                                    //     div.classList.add(`selected`)
+                                    // }
+
+                                    toggleView.appendChild(div)
+                                    dataView++
+                                });
+                            } else {
+                            }
                         }
                     }
                 }
