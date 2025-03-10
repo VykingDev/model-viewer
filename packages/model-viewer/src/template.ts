@@ -183,6 +183,11 @@ VYKING 04/03/2025 Replace default progress bar
   overflow: hidden;
 }
 
+#default-progress-bar > #default-progress-img {
+    height: 80px;
+    margin: 10px;
+}
+
 #default-progress-bar > .bar {
   width: 100%;
   height: var(--progress-bar-height, 3px);
@@ -434,6 +439,7 @@ VYKING 04/03/2025 Replace default progress bar
     <div class="slot progress-bar">
       <slot name="progress-bar">
         <div id="default-progress-bar" aria-hidden="true">
+          <img id="default-progress-img" part="default-progress-img"/>
           <div>Loading... <span id="default-progress-text" part="default-progress-text">0%</span></div>
           <div class="bar" part="default-progress-bar"></div>
         </div>
