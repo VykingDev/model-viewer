@@ -42,7 +42,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.14"
+        #VykingMixinVersion = "3.3.0-1.15alpha"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -367,9 +367,18 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                                 prop = bodyPart?.apparel[0]?.glb_uri
                             }
 
+                            const img = this.shadowRoot!.querySelector('#default-progress-img') as HTMLImageElement
                             if (prop != null) {
+                                if (img != null) {
+                                    img.src = toResourceUrl(json.icon_uri, resourcePath)
+                                }
+
                                 this.setAttribute('src', toResourceUrl(prop, resourcePath))
                             } else {
+                                if (img != null) {
+                                    img.src = ''
+                                }
+
                                 this.removeAttribute('src')
                             }
                         }

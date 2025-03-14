@@ -13,34 +13,34 @@
  * limitations under the License.
  */
 
-import {property} from 'lit/decorators.js';
-import {Vector3} from 'three';
+import { property } from 'lit/decorators.js';
+import { Vector3 } from 'three';
 
-import ModelViewerElementBase, {$altDefaulted, $announceModelVisibility, $getModelIsVisible, $isElementInViewport, $poster, $progressTracker, $scene, $shouldAttemptPreload, $updateSource, $userInputElement, toVector3D, Vector3D} from '../model-viewer-base.js';
-import {$loader, CachingGLTFLoader} from '../three-components/CachingGLTFLoader.js';
-import {Renderer} from '../three-components/Renderer.js';
-import {Constructor, throttle} from '../utilities.js';
+import ModelViewerElementBase, { $altDefaulted, $announceModelVisibility, $getModelIsVisible, $isElementInViewport, $poster, $progressTracker, $scene, $shouldAttemptPreload, $updateSource, $userInputElement, toVector3D, Vector3D } from '../model-viewer-base.js';
+import { $loader, CachingGLTFLoader } from '../three-components/CachingGLTFLoader.js';
+import { Renderer } from '../three-components/Renderer.js';
+import { Constructor, throttle } from '../utilities.js';
 
-export type RevealAttributeValue = 'auto'|'manual';
-export type LoadingAttributeValue = 'auto'|'lazy'|'eager';
+export type RevealAttributeValue = 'auto' | 'manual';
+export type LoadingAttributeValue = 'auto' | 'lazy' | 'eager';
 
 export const PROGRESS_BAR_UPDATE_THRESHOLD = 100;
 
 const DEFAULT_DRACO_DECODER_LOCATION =
-    'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
+  'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
 
 const DEFAULT_KTX2_TRANSCODER_LOCATION =
-    'https://www.gstatic.com/basis-universal/versioned/2021-04-15-ba1c3e4/';
+  'https://www.gstatic.com/basis-universal/versioned/2021-04-15-ba1c3e4/';
 
 const DEFAULT_LOTTIE_LOADER_LOCATION =
-    'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/LottieLoader.js';
+  'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/LottieLoader.js';
 
-const RevealStrategy: {[index: string]: RevealAttributeValue} = {
+const RevealStrategy: { [index: string]: RevealAttributeValue } = {
   AUTO: 'auto',
   MANUAL: 'manual'
 };
 
-const LoadingStrategy: {[index: string]: LoadingAttributeValue} = {
+const LoadingStrategy: { [index: string]: LoadingAttributeValue } = {
   AUTO: 'auto',
   LAZY: 'lazy',
   EAGER: 'eager'
@@ -61,7 +61,7 @@ const $ariaLabelCallToAction = Symbol('ariaLabelCallToAction');
 const $onProgress = Symbol('onProgress');
 
 export declare interface LoadingInterface {
-  poster: string|null;
+  poster: string | null;
   reveal: RevealAttributeValue;
   loading: LoadingAttributeValue;
   readonly loaded: boolean;
@@ -138,8 +138,8 @@ export interface ModelViewerGlobalConfig {
  * the decoder to be loaded from an alternative, acceptable location.
  */
 export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
-    ModelViewerElement:
-        T): Constructor<LoadingInterface, LoadingStaticInterface>&T => {
+  ModelViewerElement:
+    T): Constructor<LoadingInterface, LoadingStaticInterface> & T => {
   class LoadingModelViewerElement extends ModelViewerElement {
     static set dracoDecoderLocation(value: string) {
       CachingGLTFLoader.setDRACODecoderLocation(value);
@@ -187,7 +187,7 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
      * A URL pointing to the image to use as a poster in scenarios where the
      * <model-viewer> is not ready to reveal a rendered model to the viewer.
      */
-    @property({type: String}) poster: string|null = null;
+    @property({ type: String }) poster: string | null = null;
 
     /**
      * An enumerable attribute describing under what conditions the
@@ -196,7 +196,7 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
      * The default value is "auto". The only supported alternative values is
      * "manual".
      */
-    @property({type: String})
+    @property({ type: String })
     reveal: RevealAttributeValue = RevealStrategy.AUTO;
 
     /**
@@ -208,7 +208,7 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
      * when it is near the viewport for reveal = "auto", and when interacted
      * with for reveal = "interaction". Eager loads the model immediately.
      */
-    @property({type: String})
+    @property({ type: String })
     loading: LoadingAttributeValue = LoadingStrategy.AUTO;
 
     /**
@@ -259,31 +259,63 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       return toVector3D(this[$scene].boundingBox.getCenter(new Vector3()));
     }
 
-    protected[$modelIsRevealed] = false;
+    protected [$modelIsRevealed] = false;
 
-    protected[$shouldDismissPoster] = false;
+    protected [$shouldDismissPoster] = false;
 
     // TODO: Add this to the shadow root as part of this mixin's
     // implementation:
-    protected[$posterContainerElement]: HTMLElement =
-        this.shadowRoot!.querySelector('.slot.poster') as HTMLElement;
+    protected [$posterContainerElement]: HTMLElement =
+      this.shadowRoot!.querySelector('.slot.poster') as HTMLElement;
 
-    protected[$defaultPosterElement]: HTMLElement =
-        this.shadowRoot!.querySelector('#default-poster') as HTMLElement;
+    protected [$defaultPosterElement]: HTMLElement =
+      this.shadowRoot!.querySelector('#default-poster') as HTMLElement;
 
-    protected[$defaultProgressBarElement]: HTMLElement =
-        this.shadowRoot!.querySelector('#default-progress-bar > .bar') as
-        HTMLElement;
+    protected [$defaultProgressBarElement]: HTMLElement =
+      this.shadowRoot!.querySelector('#default-progress-bar > .bar') as
+      HTMLElement;
 
-    protected[$ariaLabelCallToAction] =
-        this[$defaultPosterElement].getAttribute('aria-label');
+    protected [$ariaLabelCallToAction] =
+      this[$defaultPosterElement].getAttribute('aria-label');
 
-    protected[$updateProgressBar] = throttle((progress: number) => {
+    // VYKING 04/03/2025 Replace default progress bar
+    // protected[$updateProgressBar] = throttle((progress: number) => {
+    //   const parentNode = this[$defaultProgressBarElement].parentNode as Element;
+
+    //   requestAnimationFrame(() => {
+    //     this[$defaultProgressBarElement].style.transform =
+    //         `scaleX(${progress})`;
+
+    //     if (progress === 0) {
+    //       // NOTE(cdata): We remove and re-append the progress bar in this
+    //       // condition so that the progress bar does not appear to
+    //       // transition backwards from the right when we reset to 0 (or
+    //       // otherwise <1) progress after having already reached 1 progress
+    //       // previously.
+    //       parentNode.removeChild(this[$defaultProgressBarElement]);
+    //       parentNode.appendChild(this[$defaultProgressBarElement]);
+    //     }
+
+    //     // NOTE(cdata): IE11 does not properly respect the second parameter
+    //     // of classList.toggle, which this implementation originally used.
+    //     // @see https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/11865865/
+    //     if (progress === 1.0) {
+    //       this[$defaultProgressBarElement].classList.add('hide');
+    //     } else {
+    //       this[$defaultProgressBarElement].classList.remove('hide');
+    //     }
+    //   });
+    // }, PROGRESS_BAR_UPDATE_THRESHOLD);
+    protected [$updateProgressBar] = throttle((progress: number) => {
       const parentNode = this[$defaultProgressBarElement].parentNode as Element;
 
       requestAnimationFrame(() => {
         this[$defaultProgressBarElement].style.transform =
-            `scaleX(${progress})`;
+          `scaleX(${progress})`;
+        const defaultProgressText = parentNode.querySelector('#default-progress-text') as HTMLSpanElement
+        if (defaultProgressText != null) {
+          defaultProgressText.innerText = `${Math.round(progress * 100)}%`
+        }
 
         if (progress === 0) {
           // NOTE(cdata): We remove and re-append the progress bar in this
@@ -299,9 +331,9 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
         // of classList.toggle, which this implementation originally used.
         // @see https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/11865865/
         if (progress === 1.0) {
-          this[$defaultProgressBarElement].classList.add('hide');
+          this[$defaultProgressBarElement].parentElement?.classList.add('hide');
         } else {
-          this[$defaultProgressBarElement].classList.remove('hide');
+          this[$defaultProgressBarElement].parentElement?.classList.remove('hide');
         }
       });
     }, PROGRESS_BAR_UPDATE_THRESHOLD);
@@ -310,24 +342,24 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       super(...args);
 
       const ModelViewerElement: ModelViewerGlobalConfig =
-          (self as any).ModelViewerElement || {};
+        (self as any).ModelViewerElement || {};
 
       const dracoDecoderLocation = ModelViewerElement.dracoDecoderLocation ||
-          DEFAULT_DRACO_DECODER_LOCATION;
+        DEFAULT_DRACO_DECODER_LOCATION;
       CachingGLTFLoader.setDRACODecoderLocation(dracoDecoderLocation);
 
       const ktx2TranscoderLocation =
-          ModelViewerElement.ktx2TranscoderLocation ||
-          DEFAULT_KTX2_TRANSCODER_LOCATION;
+        ModelViewerElement.ktx2TranscoderLocation ||
+        DEFAULT_KTX2_TRANSCODER_LOCATION;
       CachingGLTFLoader.setKTX2TranscoderLocation(ktx2TranscoderLocation);
 
       if (ModelViewerElement.meshoptDecoderLocation) {
         CachingGLTFLoader.setMeshoptDecoderLocation(
-            ModelViewerElement.meshoptDecoderLocation);
+          ModelViewerElement.meshoptDecoderLocation);
       }
 
       const lottieLoaderLocation = ModelViewerElement.lottieLoaderLocation ||
-          DEFAULT_LOTTIE_LOADER_LOCATION;
+        DEFAULT_LOTTIE_LOADER_LOCATION;
       Renderer.singleton.textureUtils!.lottieLoaderUrl = lottieLoaderLocation;
     }
 
@@ -354,7 +386,7 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
       if (changedProperties.has('poster') && this.poster != null) {
         this[$defaultPosterElement].style.backgroundImage =
-            `url(${this.poster})`;
+          `url(${this.poster})`;
 
         // Vyking 25/07/2023: We may use this[$poster] when launching the vto
         // so make sure its update when the attribute is changed.   
@@ -363,7 +395,7 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
 
       if (changedProperties.has('alt')) {
         this[$defaultPosterElement].setAttribute(
-            'aria-label', this[$altDefaulted]);
+          'aria-label', this[$altDefaulted]);
       }
 
       if (changedProperties.has('reveal') || changedProperties.has('loading')) {
@@ -377,8 +409,8 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       if (progress === 1.0) {
         this[$updateProgressBar].flush();
         if (this.loaded &&
-            (this[$shouldDismissPoster] ||
-             this.reveal === RevealStrategy.AUTO)) {
+          (this[$shouldDismissPoster] ||
+            this.reveal === RevealStrategy.AUTO)) {
           this[$hidePoster]();
         }
       }
@@ -386,14 +418,14 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       this[$updateProgressBar](progress);
 
       this.dispatchEvent(
-          new CustomEvent('progress', {detail: {totalProgress: progress}}));
+        new CustomEvent('progress', { detail: { totalProgress: progress } }));
     };
 
     [$shouldAttemptPreload](): boolean {
       return !!this.src &&
-          (this[$shouldDismissPoster] ||
-           this.loading === LoadingStrategy.EAGER ||
-           (this.reveal === RevealStrategy.AUTO && this[$isElementInViewport]));
+        (this[$shouldDismissPoster] ||
+          this.loading === LoadingStrategy.EAGER ||
+          (this.reveal === RevealStrategy.AUTO && this[$isElementInViewport]));
     }
 
     [$hidePoster]() {
