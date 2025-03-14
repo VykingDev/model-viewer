@@ -36,6 +36,10 @@ export interface HotspotConfiguration {
   position?: string;
   normal?: string;
   surface?: string;
+  /****************************/
+  // Vyking 12/03/2025 Support internal hotspots
+  default?: HTMLElement
+  /****************************/
 }
 
 const a = new Vector3();
@@ -66,6 +70,13 @@ export class Hotspot extends CSS2DObject {
     this.element.classList.add('annotation-wrapper');
 
     this.slot.name = config.name;
+    /****************************/
+    // Vyking 12/03/2025 Support internal hotspots
+
+    if (config.default) {
+      this.slot.appendChild(config.default);
+    }
+    /****************************/
 
     this.element.appendChild(this.pivot);
     this.pivot.appendChild(this.slot);

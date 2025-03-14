@@ -9,14 +9,20 @@ import { property } from 'lit/decorators.js';
 import ModelViewerElementBase, { $vykingSrc } from '../model-viewer-base.js';
 import { Constructor } from '../utilities.js';
 import { FileLoader, LoaderUtils } from 'three';
+import { AnnotationInterface } from './annotation.js';
+import { LoadingInterface } from './loading.js';
+import { ControlsInterface } from './controls.js';
+
 export declare interface VykingInterface {
     vykingSrc: string | null;
 }
 
-export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
+export const VykingMixin = <T extends Constructor<ModelViewerElementBase & AnnotationInterface & LoadingInterface & ControlsInterface>>(
     ModelViewerElement: T): Constructor<VykingInterface> & T => {
 
     class VykingModelViewerElement extends ModelViewerElement {
+        dimensionsVisible = false;
+
         constructor(...args: Array<any>) {
             super(args)
 
@@ -32,8 +38,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             if (newValue != null) {
                 this.#loadFromOffsetsJson(newValue, (error: Error) => {
                     this.dispatchEvent(new CustomEvent(
-                        'error', {detail: {type: 'loadfailure', sourceError: error}}));
-                 })
+                        'error', { detail: { type: 'loadfailure', sourceError: error } }));
+                })
             } else {
                 this.src = null
             }
@@ -42,7 +48,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.14"
+        #VykingMixinVersion = "3.3.0-1.15alpha"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -244,6 +250,140 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
                             this.removeAttribute('camera-orbit')
                         }
                     }
+
+                    {
+                        const toggleDimensionsSlot = this.shadowRoot!.querySelector('.slot.dimensions-toggle') as HTMLElement
+                        if (toggleDimensionsSlot != null) {
+                            toggleDimensionsSlot.classList.remove(`enabled`)
+                        }
+                        const toggleDimensions = json['show_dimensions']
+                        if (toggleDimensions != null && toggleDimensions === true) {
+                            toggleDimensionsSlot.classList.add(`enabled`)
+                        }
+
+                        const toggleDimension = this.shadowRoot!.querySelector('#default-dimensions-toggle') as HTMLElement
+                        if (toggleDimension != null) {
+                            toggleDimension.onclick = (/*event: MouseEvent*/) => {
+                                this.dimensionsVisible = !this.dimensionsVisible;
+                                this.setDimensionsVisibility(this.dimensionsVisible);
+
+                                if (this.dimensionsVisible) {
+                                    toggleDimension.classList.add('active');
+                                    toggleDimension.textContent = 'Hide Dimensions';
+
+                                    this.dataset.savedCameraOrbit = this.cameraOrbit;
+                                    this.dataset.savedCameraTarget = this.cameraTarget;
+
+                                    // Change to a skewed view that better shows the dimensions
+                                    this.cameraOrbit = '45deg 65deg 130%';
+                                    this.cameraTarget = 'auto';
+
+                                    this.removeAttribute('auto-rotate')
+                                } else {
+                                    toggleDimension.classList.remove('active');
+                                    toggleDimension.textContent = 'Show Dimensions';
+
+                                    this.cameraOrbit = this.dataset.savedCameraOrbit ?? '';
+                                    this.cameraTarget = this.dataset.savedCameraTarget ?? 'auto';
+                                    this.dataset.savedCameraOrbit = '';
+                                    this.dataset.savedCameraTarget = '';
+                                }
+
+                                {
+                                    // Get model dimensions
+                                    const center = this.getBoundingBoxCenter();
+                                    const size = this.getDimensions();
+                                    const x2 = size.x / 2;
+                                    const y2 = size.y / 2;
+                                    const z2 = size.z / 2;
+                                    let target
+
+                                    // Update hotspot positions
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot+X-Y+Z',
+                                        position: `${center.x + x2} ${center.y - y2} ${center.z + z2}`
+                                    });
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dim+X-Y',
+                                        position: `${center.x + x2 * 1.2} ${center.y - y2 * 1.1} ${center.z}`
+                                    });
+                                    this.shadowRoot!.querySelector('slot[name="hotspot-vyking-dim+X-Y"] > button')!.textContent = `${(size.z * 100).toFixed(0)} cm`;
+                                    target = this.querySelector('[slot="hotspot-vyking-dim+X-Y"]')
+                                    if (target != null) {
+                                        target.textContent = `${(size.z * 100).toFixed(0)} cm`
+                                    }
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot+X-Y-Z',
+                                        position: `${center.x + x2} ${center.y - y2} ${center.z - z2}`
+                                    });
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dim+X-Z',
+                                        position: `${center.x + x2 * 1.2} ${center.y} ${center.z - z2 * 1.2}`
+                                    });
+                                    this.shadowRoot!.querySelector('slot[name="hotspot-vyking-dim+X-Z"] > button')!.textContent = `${(size.y * 100).toFixed(0)} cm`;
+                                    target = this.querySelector('[slot="hotspot-vyking-dim+X-Z"]')
+                                    if (target != null) {
+                                        target.textContent = `${(size.y * 100).toFixed(0)} cm`
+                                    }
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot+X+Y-Z',
+                                        position: `${center.x + x2} ${center.y + y2} ${center.z - z2}`
+                                    });
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dim+Y-Z',
+                                        position: `${center.x} ${center.y + y2 * 1.1} ${center.z - z2 * 1.1}`
+                                    });
+                                    this.shadowRoot!.querySelector('slot[name="hotspot-vyking-dim+Y-Z"] > button')!.textContent = `${(size.x * 100).toFixed(0)} cm`;
+                                    target = this.querySelector('[slot="hotspot-vyking-dim+Y-Z"]')
+                                    if (target != null) {
+                                        target.textContent = `${(size.x * 100).toFixed(0)} cm`
+                                    }
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot-X+Y-Z',
+                                        position: `${center.x - x2} ${center.y + y2} ${center.z - z2}`
+                                    });
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dim-X-Z',
+                                        position: `${center.x - x2 * 1.2} ${center.y} ${center.z - z2 * 1.2}`
+                                    });
+                                    this.shadowRoot!.querySelector('slot[name="hotspot-vyking-dim-X-Z"] > button')!.textContent = `${(size.y * 100).toFixed(0)} cm`;
+                                    target = this.querySelector('[slot="hotspot-vyking-dim-X-Z"]')
+                                    if (target != null) {
+                                        target.textContent = `${(size.y * 100).toFixed(0)} cm`
+                                    }
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot-X-Y-Z',
+                                        position: `${center.x - x2} ${center.y - y2} ${center.z - z2}`
+                                    });
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dim-X-Y',
+                                        position: `${center.x - x2 * 1.2} ${center.y - y2 * 1.1} ${center.z}`
+                                    });
+                                    this.shadowRoot!.querySelector('slot[name="hotspot-vyking-dim-X-Y"] > button')!.textContent = `${(size.z * 100).toFixed(0)} cm`;
+                                    target = this.querySelector('[slot="hotspot-vyking-dim-X-Y"]')
+                                    if (target != null) {
+                                        target.textContent = `${(size.z * 100).toFixed(0)} cm`
+                                    }
+
+                                    this.updateHotspot({
+                                        name: 'hotspot-vyking-dot-X-Y+Z',
+                                        position: `${center.x - x2} ${center.y - y2} ${center.z + z2}`
+                                    });
+
+                                    this.renderSVG();
+                                }
+                            }
+                        }
+                    }
                 }
 
                 const logStatsToAmazon = async (type: string) => {
@@ -415,12 +555,98 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase>>(
             }, () => { }, _onError)
         }
 
+        setDimensionsVisibility = (visible: boolean) => {
+            const dimElements = Array.from(this.shadowRoot!.querySelectorAll('slot[name^="hotspot"]')).concat([this.shadowRoot!.querySelector('#dimLines')!]);
+
+            dimElements.forEach((element) => {
+                if (visible) {
+                    element.classList.remove('hide');
+                } else {
+                    element.classList.add('hide');
+                }
+            });
+        }
+
+        // Function to render SVG dimension lines
+        renderSVG = () => {
+            const dimLines = this.shadowRoot!.querySelectorAll('.dimensionLine');
+
+            this.drawLine(
+                dimLines[0],
+                this.queryHotspot('hotspot-vyking-dot+X-Y+Z'),
+                this.queryHotspot('hotspot-vyking-dot+X-Y-Z'),
+                this.queryHotspot('hotspot-vyking-dim+X-Y')
+            );
+
+            this.drawLine(
+                dimLines[1],
+                this.queryHotspot('hotspot-vyking-dot+X-Y-Z'),
+                this.queryHotspot('hotspot-vyking-dot+X+Y-Z'),
+                this.queryHotspot('hotspot-vyking-dim+X-Z')
+            );
+
+            this.drawLine(
+                dimLines[2],
+                this.queryHotspot('hotspot-vyking-dot+X+Y-Z'),
+                this.queryHotspot('hotspot-vyking-dot-X+Y-Z'),
+                this.queryHotspot('hotspot-vyking-dim+X-Z') // THIS MAY BE WRong
+            );
+
+            this.drawLine(
+                dimLines[3],
+                this.queryHotspot('hotspot-vyking-dot-X+Y-Z'),
+                this.queryHotspot('hotspot-vyking-dot-X-Y-Z'),
+                this.queryHotspot('hotspot-vyking-dim-X-Z')
+            );
+
+            this.drawLine(
+                dimLines[4],
+                this.queryHotspot('hotspot-vyking-dot-X-Y-Z'),
+                this.queryHotspot('hotspot-vyking-dot-X-Y+Z'),
+                this.queryHotspot('hotspot-vyking-dim-X-Y')
+            );
+        }
+
+        // Function to draw dimension lines
+        drawLine = (svgLine: any, dotHotspot1: any, dotHotspot2: any, dimensionHotspot: any) => {
+            // console.info(`steve drawLine: %o %o %o`, dotHotspot1, dotHotspot2, dimensionHotspot)
+            if (dotHotspot1 && dotHotspot2) {
+                // Calculate the midpoint between the two dots
+                const x1 = dotHotspot1.canvasPosition.x;
+                const y1 = dotHotspot1.canvasPosition.y;
+                const x2 = dotHotspot2.canvasPosition.x;
+                const y2 = dotHotspot2.canvasPosition.y;
+
+                // Create an offset for the dimension line (don't connect directly)
+                const offsetX = (x2 - x1) * 0.1; // 10% offset
+                const offsetY = (y2 - y1) * 0.1; // 10% offset
+
+                // Set the line to start and end with a small gap from the dots
+                svgLine.setAttribute('x1', x1 + offsetX);
+                svgLine.setAttribute('y1', y1 + offsetY);
+                svgLine.setAttribute('x2', x2 - offsetX);
+                svgLine.setAttribute('y2', y2 - offsetY);
+
+                // Use provided optional hotspot to tie visibility of this svg line to
+                if (dimensionHotspot && !dimensionHotspot.facingCamera) {
+                    svgLine.classList.add('hide');
+                } else {
+                    svgLine.classList.remove('hide');
+                }
+            }
+        }
+
         connectedCallback() {
             super.connectedCallback();
+
+            this.setDimensionsVisibility(this.dimensionsVisible);
+            this.addEventListener('camera-change', this.renderSVG);
         }
 
         disconnectedCallback() {
             super.disconnectedCallback();
+
+            this.removeEventListener('camera-change', this.renderSVG);
         }
     }
 
