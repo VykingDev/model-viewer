@@ -74,6 +74,14 @@ export const AnnotationMixin = <T extends Constructor<ModelViewerElementBase>>(
 
     connectedCallback() {
       super.connectedCallback();
+    
+      /****************************/
+      // Vyking 12/03/2025 Support internal hotspots
+      const hotspots = this.shadowRoot!.querySelector('#hotspots');
+      for (let i = 0; i < hotspots!.children.length; ++i) {
+        this[$addHotspot](hotspots!.children[i]);
+      }
+      /****************************/
 
       for (let i = 0; i < this.children.length; ++i) {
         this[$addHotspot](this.children[i]);
@@ -232,6 +240,10 @@ export const AnnotationMixin = <T extends Constructor<ModelViewerElementBase>>(
           position: node.dataset.position,
           normal: node.dataset.normal,
           surface: node.dataset.surface,
+          /****************************/
+          // Vyking 12/03/2025 Support internal hotspots
+          default: node.firstElementChild as HTMLElement | undefined
+          /****************************/
         });
         this[$hotspotMap].set(node.slot, hotspot);
         this[$scene].addHotspot(hotspot);

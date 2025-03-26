@@ -394,7 +394,134 @@ VYKING 04/03/2025 Replace default progress bar
     outline: 2px solid black;
     transform: scale(1.2);
 }
+
+.slot.dimensions-toggle:not(.enabled) {
+  display: none;
+}
+
+#default-dimensions-toggle {
+    position: absolute; 
+    top: 16px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    color: #000; 
+    background-color: green; 
+    border: 1px solid #ccc;
+}
+
+/* Dimension styles */
+.dot {
+    display: none;
+}
+
+.dim {
+    border-radius: 4px;
+    border: none;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    color: rgba(0, 0, 0, 0.8);
+    display: block;
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: 700;
+    max-width: 128px;
+    overflow-wrap: break-word;
+    padding: 0.5em 1em;
+    position: absolute;
+    width: max-content;
+    height: max-content;
+    transform: translate3d(-50%, -50%, 0);
+    pointer-events: none;
+    --min-hotspot-opacity: 0;
+    background-color: white;
+}
+
+@media only screen and (max-width: 800px) {
+    .dim {
+        font-size: 3vw;
+    }
+}
+
+.dimensionLineContainer {
+    pointer-events: none;
+    display: block;
+}
+
+.dimensionLine {
+    stroke: #000000;
+    stroke-width: 2;
+}
+
+.hide {
+    display: none !important;
+}
+
+.apple-button {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-family: 'Graphik';
+    font-size: 14px;
+    color: #000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.apple-button:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.apple-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
 </style>
+<!-- Add dimension hotspots -->
+<div id="hotspots" style="display: none;">
+  <div slot="hotspot-vyking-dot+X-Y+Z" class="dot" data-position="1 -1 1" data-normal="1 0 0">
+    <button part="hotspot-vyking-dot+X-Y+Z" class="dot" data-position="1 -1 1" data-normal="1 0 0"></button>
+  </div>
+  <div slot="hotspot-vyking-dim+X-Y" class="dim" data-position="1 -1 0" data-normal="1 0 0">
+    <button part="hotspot-vyking-dim+X-Y" class="dim" data-position="1 -1 0" data-normal="1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+  </div>
+  <div slot="hotspot-vyking-dot+X-Y-Z" class="dot" data-position="1 -1 -1" data-normal="1 0 0">
+    <button part="hotspot-vyking-dot+X-Y-Z" class="dot" data-position="1 -1 -1" data-normal="1 0 0"></button>
+  </div>
+  <div slot="hotspot-vyking-dim+X-Z" class="dim" data-position="1 0 -1" data-normal="1 0 0">
+    <button part="hotspot-vyking-dim+X-Z" class="dim" data-position="1 0 -1" data-normal="1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+  </div>
+  <div slot="hotspot-vyking-dot+X+Y-Z" class="dot" data-position="1 1 -1" data-normal="0 1 0">
+    <button part="hotspot-vyking-dot+X+Y-Z" class="dot" data-position="1 1 -1" data-normal="0 1 0"></button>
+  </div>
+  <div slot="hotspot-vyking-dim+Y-Z" class="dim" data-position="0 -1 -1" data-normal="0 1 0">
+    <button part="hotspot-vyking-dim+Y-Z" class="dim" data-position="0 -1 -1" data-normal="0 1 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+  </div>
+  <div slot="hotspot-vyking-dot-X+Y-Z" class="dot" data-position="-1 1 -1" data-normal="0 1 0">
+    <button part="hotspot-vyking-dot-X+Y-Z" class="dot" data-position="-1 1 -1" data-normal="0 1 0"></button>
+  </div>
+  <div slot="hotspot-vyking-dim-X-Z" class="dim" data-position="-1 0 -1" data-normal="-1 0 0">
+    <button part="hotspot-vyking-dim-X-Z" slot="hotspot-vyking-dim-X-Z" class="dim" data-position="-1 0 -1" data-normal="-1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+  </div>
+  <div slot="hotspot-vyking-dot-X-Y-Z" class="dot" data-position="-1 -1 -1" data-normal="-1 0 0">
+    <button part="hotspot-vyking-dot-X-Y-Z" class="dot" data-position="-1 -1 -1" data-normal="-1 0 0"></button>
+  </div>
+  <div slot="hotspot-vyking-dim-X-Y" class="dim" data-position="-1 -1 0" data-normal="-1 0 0">
+    <button part="hotspot-vyking-dim-X-Y" slot="hotspot-vyking-dim-X-Y" class="dim" data-position="-1 -1 0" data-normal="-1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+  </div>
+  <div slot="hotspot-vyking-dot-X-Y+Z" class="dot" data-position="-1 -1 1" data-normal="-1 0 0">
+    <button part="hotspot-vyking-dot-X-Y+Z" class="dot" data-position="-1 -1 1" data-normal="-1 0 0"></button>
+  </div>
+</div>
+
 <div class="container">
   <div class="userInput" tabindex="0" role="img"
       aria-label="3D model">
@@ -403,7 +530,6 @@ VYKING 04/03/2025 Replace default progress bar
           <canvas></canvas>
         </slot>
       </div>
-
   </div>
 
   <!-- NOTE(cdata): We need to wrap slots because browsers without ShadowDOM
@@ -465,8 +591,24 @@ VYKING 04/03/2025 Replace default progress bar
     </slot>
   </div>
 
+  <div class="slot dimensions-toggle">
+    <slot name="dimensions-toggle">
+      <button id="default-dimensions-toggle" part="default-dimensions-toggle" class="apple-button">
+          <span style="font-size: 18px;"></span> <span id="dimensions-text">Show Dimensions</span>
+      </button>
+    </slot>
+  </div>
+
   <div class="slot default">
     <slot></slot>
+
+    <svg id="dimLines" width="100%" height="100%" class="dimensionLineContainer">
+      <line class="dimensionLine hide"></line>
+      <line class="dimensionLine hide"></line>
+      <line class="dimensionLine hide"></line>
+      <line class="dimensionLine hide"></line>
+      <line class="dimensionLine hide"></line>
+    </svg>
 
     <div id="default-vto" part="default-vto" aria-hidden="true">
     </div>
