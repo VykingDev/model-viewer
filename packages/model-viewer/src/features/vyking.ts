@@ -12,9 +12,11 @@ import { FileLoader, LoaderUtils } from 'three';
 import { AnnotationInterface } from './annotation.js';
 import { LoadingInterface } from './loading.js';
 import { ControlsInterface } from './controls.js';
+import { Renderer } from '../three-components/Renderer.js';
 
 export declare interface VykingInterface {
     vykingSrc: string | null;
+    vykingCanvas: HTMLCanvasElement | null;
 }
 
 // Define the type for view points
@@ -56,7 +58,11 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
             return this[$vykingSrc]
         }
 
-        #VykingMixinVersion = "3.3.0-1.15alpha"
+        get vykingCanvas() {
+            return Renderer.singleton.canvas3D
+        }
+
+        #VykingMixinVersion = "3.3.0-2.1"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -164,6 +170,17 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                 //         }
                 //     }
                 // }
+                const toggleViewSlot = this.shadowRoot!.querySelector('.slot.view-toggles') as HTMLElement
+                if (toggleViewSlot != null) {
+                    toggleViewSlot.classList.remove(`enabled`)
+                }
+
+                this.dimensionsVisible = false
+                this.setDimensionsVisibility(false)
+                const toggleDimensionsSlot = this.shadowRoot!.querySelector('.slot.dimensions-toggle') as HTMLElement
+                if (toggleDimensionsSlot != null) {
+                    toggleDimensionsSlot.classList.remove(`enabled`)
+                }
                 const loadViewerAttributes = (json: any): void => {
                     {
                         const prop = json['environmentImage-viewer']
@@ -253,45 +270,22 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                             const yaw = prop.yaw ?? "auto"
                             const pitch = prop.pitch ?? "auto"
                             const distance = prop.dist ?? "auto"
-                            this.setAttribute('camera-orbit', `${yaw} ${pitch} ${distance}`)
+                            this.cameraOrbit = `${yaw} ${pitch} ${distance}`
+                            this.cameraTarget = prop.target ?? 'auto'
                         } else {
                             this.removeAttribute('camera-orbit')
                         }
                     }
 
                     {
-                        // const json = {
-                        //     "toggle_views": {
-                        //         "showToggle": true,
-                        //         "views": [
-                        //             {
-                        //                 "orbit": "0deg 75deg 105%",
-                        //                 "target": "auto"
-                        //             },
-                        //             {
-                        //                 "orbit": "-62.78deg 59.47deg 40%",
-                        //                 "target": "-0.14m 0.08m 0.01m"
-                        //             },
-                        //             {
-                        //                 "orbit": "52.55deg 67.68deg 70%",
-                        //                 "target": "0.07m 0.06m 0.02m"
-                        //             }
-                        //         ]
-                        //     }
-                        // }
-
-                        const toggleViewSlot = this.shadowRoot!.querySelector('.slot.view-toggles') as HTMLElement
-                        if (toggleViewSlot != null) {
-                            toggleViewSlot.classList.remove(`enabled`)
-                        }
                         const toggleProps = json['toggle_views']
                         if (toggleProps != null && toggleProps.showToggle === true) {
                             toggleViewSlot.classList.add(`enabled`)
                         }
 
                         const toggleView = this.shadowRoot!.querySelector('#default-view-toggles') as HTMLElement
-                        if (toggleView != null) {
-                            const viewPoints: ViewPoints = json.toggle_views.views
+                        if (toggleView != null && toggleProps != null) {
+                            const viewPoints: ViewPoints = toggleProps.views
 
                             toggleView.onclick = (event: MouseEvent) => {
                                 const target = event?.target
@@ -305,8 +299,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
 
                                     // Update camera position
                                     const viewPoint = viewPoints[view];
-                                    this.setAttribute('camera-orbit', viewPoint.orbit)
-                                    this.setAttribute('camera-target', viewPoint.target)
+                                    this.cameraOrbit = viewPoint.orbit;
+                                    this.cameraTarget = viewPoint.target;
 
                                     // Update active button state
                                     const toggleOptions = this.shadowRoot!.querySelectorAll('.toggle-option')
@@ -336,11 +330,9 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                                 });
                             }
                         }
+                    }
 
-                        const toggleDimensionsSlot = this.shadowRoot!.querySelector('.slot.dimensions-toggle') as HTMLElement
-                        if (toggleDimensionsSlot != null) {
-                            toggleDimensionsSlot.classList.remove(`enabled`)
-                        }
+                    {
                         const toggleDimensions = json['show_dimensions']
                         if (toggleDimensions != null && toggleDimensions === true) {
                             toggleDimensionsSlot.classList.add(`enabled`)
@@ -348,6 +340,8 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
 
                         const toggleDimension = this.shadowRoot!.querySelector('#default-dimensions-toggle') as HTMLElement
                         if (toggleDimension != null) {
+                            toggleDimension.textContent = 'Show Dimensions';
+
                             toggleDimension.onclick = (/*event: MouseEvent*/) => {
                                 this.dimensionsVisible = !this.dimensionsVisible;
                                 this.setDimensionsVisibility(this.dimensionsVisible);
@@ -378,9 +372,9 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                                     // Get model dimensions
                                     const center = this.getBoundingBoxCenter();
                                     const size = this.getDimensions();
-                                    const x2 = size.x / 2;
-                                    const y2 = size.y / 2;
-                                    const z2 = size.z / 2;
+                                    const x2 = size.x * 1.05 / 2;
+                                    const y2 = size.y * 1.05 / 2;
+                                    const z2 = size.z * 1.05 / 2;
                                     let target
 
                                     // Update hotspot positions
@@ -475,12 +469,11 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                     if (!this.#internetLoggingProperties.loggingEnabled) { return }
                     if (this.#internetLoggingProperties.loggingUrl === '') { return }
 
-                    const version = "1.0"
                     const fqdn = window.self === window.top
-                        ? new URL(document.location.href).hostname
-                        : document.referrer !== '' // The spec says this should be set, but for firefox it's not!!!!
-                            ? new URL(document.referrer).hostname
-                            : new URL(window.top!.location.href).hostname // Best guess at an alternative
+                            ? new URL(document.location.href).hostname
+                            : document.referrer !== '' // The spec says this should be set, but for firefox it's not!!!!
+                                ? new URL(document.referrer).hostname
+                                : new URL(window.top!.location.href).hostname // Best guess at an alternative
                     const reversedFQDN = (fqdn: string) => fqdn.split('.').reverse().join('.')
                     const encodeURIComponent = (x: string) => x
                     const sumString = (str: string) => {
@@ -508,7 +501,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                             + `|${encodeURIComponent(new Date().toISOString())}` // data and time
                             + `|${encodeURIComponent(navigator.language)}` // locale
                             + `|${encodeURIComponent(navigator.userAgent)}` // browser type and version
-                            + `|${encodeURIComponent(this.#internetLoggingProperties.shortShoeDescription.replace(/|/g, ' '))}^^${encodeURIComponent(this.#internetLoggingProperties.longShoeDescription.replace(/|/g, ' '))}` // asset names
+                            + `|${encodeURIComponent(this.#internetLoggingProperties.shortShoeDescription.replace(/\|/g, ' ').replace(/—/g, '-'))}^^${encodeURIComponent(this.#internetLoggingProperties.longShoeDescription.replace(/\|/g, ' ').replace(/—/g, '-'))}` // asset names
                             + `|${encodeURIComponent(this.#internetLoggingProperties.organizationId)}`
                             + `|${encodeURIComponent(this.#internetLoggingProperties.assetId)}`
 
@@ -530,7 +523,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                                 case "vykvalue":
                                     this.#internetLoggingProperties.statsLoggingFailureCount = (parseInt(value, 10) === logMessageSum) ? 0 : this.#internetLoggingProperties.statsLoggingFailureCount + 1
                                     if (this.#internetLoggingProperties.statsLoggingFailureCount > 0) {
-                                        console.error(`logStatsToAmazon failed ${this.#internetLoggingProperties.statsLoggingFailureCount}.`)
+                                        console.error(`logStatsToAmazon failed ${parseInt(value, 10)} ${this.#internetLoggingProperties.statsLoggingFailureCount}.`)
                                     }
                                     break
                                 case "suspend":
@@ -546,12 +539,12 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                 }
 
                 const loadStatsProperties = (json: any): void => {
-                    let prop = json['shortShoeDescription']
+                    let prop = json['shortDescription'] ?? json['shortShoeDescription']
                     if (prop != null) {
                         this.#internetLoggingProperties.shortShoeDescription = prop
                     }
 
-                    prop = json['longShoeDescription']
+                    prop = json['longDescription'] ?? json['longShoeDescription']
                     if (prop != null) {
                         this.#internetLoggingProperties.longShoeDescription = prop
                     }
@@ -574,11 +567,11 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                         loadStatsProperties(json)
 
                         {
-                            let prop = json.viewer_model
+                            let prop = json.viewerAttributes?.viewer_model
                             if (prop == null) {
                                 const bodyPart = json.schemaVersion === "1.1"
                                     ? json.left_foot ? json.footLeft : json.footRight
-                                    : json.schemaVersion === "2.0"
+                                    : Number(json.schemaVersion) >= 2.0
                                         ? json.type === "foot"
                                             ? json.left_foot ? json.footLeft : json.footRight
                                             : json.type === "head"
@@ -594,8 +587,9 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
 
                             const img = this.shadowRoot!.querySelector('#default-progress-img') as HTMLImageElement
                             if (prop != null) {
-                                if (img != null) {
-                                    img.src = toResourceUrl(json.icon_uri, resourcePath)
+                                const imgUri = json.asset_icon_uri ?? json.icon_uri
+                                if (img != null && imgUri != null) {
+                                    img.src = toResourceUrl(imgUri, resourcePath)
                                 }
 
                                 this.setAttribute('src', toResourceUrl(prop, resourcePath))
@@ -647,13 +641,14 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                         logStatsToAmazon('modelViewer3Dmodel')
                     }
                 } catch (e: any) {
+                    console.error(`#loadFromOffsetsJson: ${e}`)
                     _onError(e);
                 }
             }, () => { }, _onError)
         }
 
         setDimensionsVisibility = (visible: boolean) => {
-            const dimElements = Array.from(this.shadowRoot!.querySelectorAll('slot[name^="hotspot"]')).concat([this.shadowRoot!.querySelector('#dimLines')!]);
+            const dimElements = Array.from(this.shadowRoot!.querySelectorAll('slot[name^="hotspot-vyking"]')).concat([this.shadowRoot!.querySelector('#dimLines')!]);
 
             dimElements.forEach((element) => {
                 if (visible) {
@@ -706,7 +701,6 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
 
         // Function to draw dimension lines
         drawLine = (svgLine: any, dotHotspot1: any, dotHotspot2: any, dimensionHotspot: any) => {
-            // console.info(`steve drawLine: %o %o %o`, dotHotspot1, dotHotspot2, dimensionHotspot)
             if (dotHotspot1 && dotHotspot2) {
                 // Calculate the midpoint between the two dots
                 const x1 = dotHotspot1.canvasPosition.x;

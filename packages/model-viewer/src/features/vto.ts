@@ -511,7 +511,7 @@ configuration or device capabilities');
             console.log(`VTOModelViewerElement.openIframeViewer config: %o`, config)
 
             const escapeHTML = (text: string) =>  {
-                return text.replace(/"/g, "&quot;")
+                return text.replace(/"/g, "&amp;quot;")
             }
             
             const toVykingApparelGlobalConfigString = (config: VykingApparelGlobalConfig) =>

@@ -36,6 +36,11 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     - Fixed a VTO memory leak.
 - 3.3.0.1.14
     - Now dispatch an error event with detail.type set to "loadfailure" when the loading of the offsets.json file fails.
+- 3.3.0.2.1
+    - New default progress loader.
+    - Added support for displaying dimensions.
+    - Added support for view changing toggle buttons.
+    - Support a specific property in the offsets.json file to specify the GLB model to load.
 
 # Attributes
 ## vto

@@ -312,19 +312,9 @@ export const LoadingMixin = <T extends Constructor<ModelViewerElementBase>>(
       requestAnimationFrame(() => {
         this[$defaultProgressBarElement].style.transform =
           `scaleX(${progress})`;
-        const defaultProgressText = parentNode.querySelector('#default-progress-text') as HTMLSpanElement
-        if (defaultProgressText != null) {
-          defaultProgressText.innerText = `${Math.round(progress * 100)}%`
-        }
-
-        if (progress === 0) {
-          // NOTE(cdata): We remove and re-append the progress bar in this
-          // condition so that the progress bar does not appear to
-          // transition backwards from the right when we reset to 0 (or
-          // otherwise <1) progress after having already reached 1 progress
-          // previously.
-          parentNode.removeChild(this[$defaultProgressBarElement]);
-          parentNode.appendChild(this[$defaultProgressBarElement]);
+        const defaultProgressPercentage = parentNode.querySelector('#default-progress-percentage') as HTMLDivElement
+        if (defaultProgressPercentage != null) {
+          defaultProgressPercentage.innerText = `${Math.round(progress * 100)}%`
         }
 
         // NOTE(cdata): IE11 does not properly respect the second parameter

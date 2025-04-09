@@ -23,6 +23,7 @@ import VTOGlyph from './assets/view-in-vto-material-svg.js';
 const templateResult = html`
 <style>
 :host {
+  font-family: arial, sans-serif;
   display: block;
   position: relative;
   contain: strict;
@@ -173,29 +174,50 @@ VYKING 04/03/2025 Replace default progress bar
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 149px;
+  height: 180px;
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background:  #D9D9D9CC;
-  padding: 20px;
+  padding: 0;
+  margin: 0;
+  border: 0;
   border-radius: 10px;
   color: black;
-  font-family: Arial, sans-serif;
   pointer-events: none;
-  overflow: hidden;
 }
 
-#default-progress-bar > #default-progress-img {
-    height: 80px;
-    margin: 10px;
+#default-progress-img {
+    pointer-events: none;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 #default-progress-bar > .bar {
-  width: 100%;
+  width:109px;
   height: var(--progress-bar-height, 3px);
   background-color: var(--progress-bar-color, black);
   transition: transform 0.09s;
   transform-origin: top left;
   transform: scaleX(0);
   overflow: hidden;
+}
+
+#default-progress-percentage {
+  font-weight: 500;
+  font-size: 15px;
+  padding: 5px;
+}
+
+#default-progress-text {
+    font-weight: 400;
+    font-size: 10px;
+    color: white;
 }
 
 #default-progress-bar.hide {
@@ -298,6 +320,8 @@ VYKING 04/03/2025 Replace default progress bar
 #default-vto {
   width: 100%;
   height: 100%;
+  background-color: #1E1E1E1A;
+  z-index: 2;
 }
 
 #default-vto:not(.enabled) {
@@ -346,10 +370,11 @@ VYKING 04/03/2025 Replace default progress bar
   align-items: center;
   justify-content: center;
   position: absolute;
-  top: env(safe-area-inset-top, 16px);
-  right: 16px;
-  width: 40px;
-  height: 40px;
+  top: 32px;
+  right: 32px;
+  transform: scale(1.5);
+  filter: invert(1);
+  mix-blend-mode: difference;
   box-sizing: border-box;
 }
 
@@ -376,7 +401,6 @@ VYKING 04/03/2025 Replace default progress bar
     width: 100px;
     justify-content: space-between;
     cursor: pointer;
-    z-index: 1;
 }
 
 .toggle-option {
@@ -404,9 +428,31 @@ VYKING 04/03/2025 Replace default progress bar
     top: 16px; 
     left: 50%; 
     transform: translateX(-50%); 
-    color: #000; 
-    background-color: green; 
-    border: 1px solid #ccc;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-family: inherit;
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    font-size: 14px;
+    color: #000;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+#default-dimensions-toggle:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#default-dimensions-toggle:active {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Dimension styles */
@@ -442,9 +488,17 @@ VYKING 04/03/2025 Replace default progress bar
     }
 }
 
+:host([vto-status^="presenting"]) .dim {
+    display: none;
+}
+
 .dimensionLineContainer {
     pointer-events: none;
     display: block;
+}
+
+:host([vto-status^="presenting"]) .dimensionLineContainer {
+    display: none;
 }
 
 .dimensionLine {
@@ -456,66 +510,38 @@ VYKING 04/03/2025 Replace default progress bar
     display: none !important;
 }
 
-.apple-button {
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    padding: 8px 16px !important;
-    border-radius: 20px !important;
-    font-family: 'Graphik';
-    font-size: 14px;
-    color: #000;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-}
-
-.apple-button:hover {
-    background: rgba(255, 255, 255, 0.9) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.apple-button:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-}
-
 </style>
 <!-- Add dimension hotspots -->
-<div id="hotspots" style="display: none;">
+<div id="vyking-hotspots" style="display: none;">
   <div slot="hotspot-vyking-dot+X-Y+Z" class="dot" data-position="1 -1 1" data-normal="1 0 0">
     <button part="hotspot-vyking-dot+X-Y+Z" class="dot" data-position="1 -1 1" data-normal="1 0 0"></button>
   </div>
   <div slot="hotspot-vyking-dim+X-Y" class="dim" data-position="1 -1 0" data-normal="1 0 0">
-    <button part="hotspot-vyking-dim+X-Y" class="dim" data-position="1 -1 0" data-normal="1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+    <button part="hotspot-vyking-dim+X-Y" class="dim" data-position="1 -1 0" data-normal="1 0 0" style="border-radius: 20px;"></button>
   </div>
   <div slot="hotspot-vyking-dot+X-Y-Z" class="dot" data-position="1 -1 -1" data-normal="1 0 0">
     <button part="hotspot-vyking-dot+X-Y-Z" class="dot" data-position="1 -1 -1" data-normal="1 0 0"></button>
   </div>
   <div slot="hotspot-vyking-dim+X-Z" class="dim" data-position="1 0 -1" data-normal="1 0 0">
-    <button part="hotspot-vyking-dim+X-Z" class="dim" data-position="1 0 -1" data-normal="1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+    <button part="hotspot-vyking-dim+X-Z" class="dim" data-position="1 0 -1" data-normal="1 0 0" style="border-radius: 20px;"></button>
   </div>
   <div slot="hotspot-vyking-dot+X+Y-Z" class="dot" data-position="1 1 -1" data-normal="0 1 0">
     <button part="hotspot-vyking-dot+X+Y-Z" class="dot" data-position="1 1 -1" data-normal="0 1 0"></button>
   </div>
   <div slot="hotspot-vyking-dim+Y-Z" class="dim" data-position="0 -1 -1" data-normal="0 1 0">
-    <button part="hotspot-vyking-dim+Y-Z" class="dim" data-position="0 -1 -1" data-normal="0 1 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+    <button part="hotspot-vyking-dim+Y-Z" class="dim" data-position="0 -1 -1" data-normal="0 1 0" style="border-radius: 20px;"></button>
   </div>
   <div slot="hotspot-vyking-dot-X+Y-Z" class="dot" data-position="-1 1 -1" data-normal="0 1 0">
     <button part="hotspot-vyking-dot-X+Y-Z" class="dot" data-position="-1 1 -1" data-normal="0 1 0"></button>
   </div>
   <div slot="hotspot-vyking-dim-X-Z" class="dim" data-position="-1 0 -1" data-normal="-1 0 0">
-    <button part="hotspot-vyking-dim-X-Z" slot="hotspot-vyking-dim-X-Z" class="dim" data-position="-1 0 -1" data-normal="-1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+    <button part="hotspot-vyking-dim-X-Z" slot="hotspot-vyking-dim-X-Z" class="dim" data-position="-1 0 -1" data-normal="-1 0 0" style="border-radius: 20px;"></button>
   </div>
   <div slot="hotspot-vyking-dot-X-Y-Z" class="dot" data-position="-1 -1 -1" data-normal="-1 0 0">
     <button part="hotspot-vyking-dot-X-Y-Z" class="dot" data-position="-1 -1 -1" data-normal="-1 0 0"></button>
   </div>
   <div slot="hotspot-vyking-dim-X-Y" class="dim" data-position="-1 -1 0" data-normal="-1 0 0">
-    <button part="hotspot-vyking-dim-X-Y" slot="hotspot-vyking-dim-X-Y" class="dim" data-position="-1 -1 0" data-normal="-1 0 0" style="font-family: 'Graphik', sans-serif; border-radius: 20px;"></button>
+    <button part="hotspot-vyking-dim-X-Y" slot="hotspot-vyking-dim-X-Y" class="dim" data-position="-1 -1 0" data-normal="-1 0 0" style="border-radius: 20px;"></button>
   </div>
   <div slot="hotspot-vyking-dot-X-Y+Z" class="dot" data-position="-1 -1 1" data-normal="-1 0 0">
     <button part="hotspot-vyking-dot-X-Y+Z" class="dot" data-position="-1 -1 1" data-normal="-1 0 0"></button>
@@ -551,7 +577,7 @@ VYKING 04/03/2025 Replace default progress bar
   </div>
 
   <div class="slot vto-button">
-    <slot name="vto-button">
+    <slot name="vto-button" class="animated-container">
       <a id="default-vto-button" part="default-vto-button" class="fab"
           tabindex="1"
           aria-label="View on your body">
@@ -593,8 +619,8 @@ VYKING 04/03/2025 Replace default progress bar
 
   <div class="slot dimensions-toggle">
     <slot name="dimensions-toggle">
-      <button id="default-dimensions-toggle" part="default-dimensions-toggle" class="apple-button">
-          <span style="font-size: 18px;"></span> <span id="dimensions-text">Show Dimensions</span>
+      <button id="default-dimensions-toggle" part="default-dimensions-toggle">
+          Show Dimensions
       </button>
     </slot>
   </div>
@@ -610,9 +636,6 @@ VYKING 04/03/2025 Replace default progress bar
       <line class="dimensionLine hide"></line>
     </svg>
 
-    <div id="default-vto" part="default-vto" aria-hidden="true">
-    </div>
-
     <!--
     // VYKING 04/03/2025 Replace default progress bar
     <div class="slot progress-bar">
@@ -625,12 +648,16 @@ VYKING 04/03/2025 Replace default progress bar
         -->
     <div class="slot progress-bar">
       <slot name="progress-bar">
-        <div id="default-progress-bar" aria-hidden="true">
+        <div id="default-progress-bar" part="default-progress-bar" aria-hidden="true">
           <img id="default-progress-img" part="default-progress-img"/>
-          <div>Loading... <span id="default-progress-text" part="default-progress-text">0%</span></div>
-          <div class="bar" part="default-progress-bar"></div>
+          <div class="bar" part="default-progress-indicator"></div>
+          <div id="default-progress-percentage" part="default-progress-percentage">0%</div>
+          <div id="default-progress-text" part="default-progress-text">Loading 3D model</div>
         </div>
       </slot>
+    </div>
+
+    <div id="default-vto" part="default-vto" aria-hidden="true">
     </div>
 
     <div class="slot exit-webxr-ar-button">

@@ -77,7 +77,7 @@ export const AnnotationMixin = <T extends Constructor<ModelViewerElementBase>>(
     
       /****************************/
       // Vyking 12/03/2025 Support internal hotspots
-      const hotspots = this.shadowRoot!.querySelector('#hotspots');
+      const hotspots = this.shadowRoot!.querySelector('#vyking-hotspots');
       for (let i = 0; i < hotspots!.children.length; ++i) {
         this[$addHotspot](hotspots!.children[i]);
       }
