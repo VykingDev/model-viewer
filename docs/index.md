@@ -17,8 +17,7 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     </model-viewer>
 ```
 # Examples
-- <a href="https://sneaker-window.vyking.io/vyking-model-viewer/examples/model-viewer-example.html" target="_blank">Simple Example</a>
-- <a href="https://sneaker-window.vyking.io/vyking-model-viewer/examples/model-viewer-catalog-example.html" target="_blank">Example</a>
+- <a href="https://sneaker-window.vyking.io/vyking-examples/index.html" target="_blank">A collection of Virtual Try-on & 3D Model viewer examples</a>
 
 # Releases
 - 3.1.1-1.6 First documented release
@@ -41,7 +40,9 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     - Added support for displaying dimensions.
     - Added support for view changing toggle buttons.
     - Support a specific property in the offsets.json file to specify the GLB model to load.
-
+- 3.3.0.2.2
+    - Added support for signed urls for offsets.json files and its resources.
+    - Fixed an issue where the code was looking for "environmentImage-viewer" instead of "environmentImage_viewer" in the offsets.json file.
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.

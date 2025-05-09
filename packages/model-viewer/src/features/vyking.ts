@@ -62,7 +62,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
             return Renderer.singleton.canvas3D
         }
 
-        #VykingMixinVersion = "3.3.0-2.1"
+        #VykingMixinVersion = "3.3.0-2.2"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
@@ -102,9 +102,31 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
 
             loader.setResponseType('text')
             loader.load(url, async (value) => {
-                const resourcePath = LoaderUtils.extractUrlBase(url)
-                const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
-                const toResourceUrl = (url: string, resourcePath: string) => isUrlAbsolute(url) ? url : resourcePath + url
+                // const resourcePath = LoaderUtils.extractUrlBase(url)
+                // const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
+                // const toResourceUrl = (url: string, resourcePath: string) => isUrlAbsolute(url) ? url : resourcePath + url
+                const resourcePath = url
+                const toResourceUrl = (name: string, parentUrl: string) => {
+                    console.log(`getURL: ${parentUrl}, ${name}`)
+                
+                    const isUrlAbsolute = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0)
+                    const queryString = (url: string) => {
+                        let search = ''
+                        try {
+                            search = new URL(url).search
+                        } catch (e) {
+                        }
+                
+                        return search.length > 0 ? search : ''
+                    }
+                
+                    const matches = parentUrl?.match(/.+\//)
+                    if (matches != null && matches.length > 0 && !isUrlAbsolute(name)) {
+                        return matches[0] + name + queryString(parentUrl)
+                    } else {
+                        return name
+                    }
+                }
 
                 // const loadViewerAttributes = (json: any): void => {
                 //     if (!this.hasAttribute('environment-image')) {
@@ -183,7 +205,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
                 }
                 const loadViewerAttributes = (json: any): void => {
                     {
-                        const prop = json['environmentImage-viewer']
+                        const prop = json['environmentImage_viewer']
                         if (prop != null) {
                             if (prop === 'neutral' || prop === 'legacy') {
                                 this.setAttribute('environment-image', prop)

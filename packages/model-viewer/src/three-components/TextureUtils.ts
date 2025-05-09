@@ -31,7 +31,10 @@ const GENERATED_SIGMA = 0.04;
 // samples and exit early, but not recompile the shader.
 const MAX_SAMPLES = 20;
 
-const HDR_FILE_RE = /\.hdr(\.js)?$/;
+// Vyking 08/05/2025 
+// Changed to handle signed URLs where query params are supplied.
+// const HDR_FILE_RE = /\.hdr(\.js)?$/;
+const HDR_FILE_RE = /\.hdr(\.js)?(\?|$)/;
 
 export default class TextureUtils {
   public lottieLoaderUrl = '';
