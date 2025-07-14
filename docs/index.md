@@ -43,6 +43,9 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
 - 3.3.0.2.2
     - Added support for signed urls for offsets.json files and its resources.
     - Fixed an issue where the code was looking for "environmentImage-viewer" instead of "environmentImage_viewer" in the offsets.json file.
+- 3.3.0.2.3
+    - Fixed a regression bug where the model didn't reload after a VTO session finished. 
+
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.

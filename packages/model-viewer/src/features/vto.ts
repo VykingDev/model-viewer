@@ -239,7 +239,7 @@ export const VTOMixin = <T extends Constructor<ModelViewerElementBase>>(
 
             this[$vtoButtonContainer].removeEventListener(
                 'click', this[$onVTOButtonContainerClick])
-  
+
             //   this[$renderer].arRenderer.removeEventListener(
             //       'status', this[$onVTOStatus]);
             //   this[$renderer].arRenderer.removeEventListener(
@@ -472,6 +472,8 @@ configuration or device capabilities');
             const onExit = () => {
                 this.#onExit = undefined
 
+                const currentApparel = iframe?.contentWindow?.document?.querySelector('vyking-apparel')?.getAttribute('apparel')
+
                 // iframe.contentWindow?.document.getElementById('vyking-apparel')?.remove()
                 iframe.remove()
 
@@ -485,10 +487,10 @@ configuration or device capabilities');
 
                 //Re-applying vyking-src now we are not presenting will allow the 
                 //model-viewer to update
-                const tmp = this.getAttribute('vyking-src')
-                this.removeAttribute('vyking-src')
-                if (tmp != null) {
-                    this.setAttribute('vyking-src', tmp)
+                this[$vykingSrc] = null
+                this.removeAttribute('src')
+                if (currentApparel != null) {
+                    this.setAttribute('vyking-src', currentApparel)
                 }
 
                 this.dispatchEvent(
@@ -510,10 +512,10 @@ configuration or device capabilities');
         #vykingApparelTemplate = (config: VykingApparelGlobalConfig) => {
             console.log(`VTOModelViewerElement.openIframeViewer config: %o`, config)
 
-            const escapeHTML = (text: string) =>  {
+            const escapeHTML = (text: string) => {
                 return text.replace(/"/g, "&amp;quot;")
             }
-            
+
             const toVykingApparelGlobalConfigString = (config: VykingApparelGlobalConfig) =>
                 'self.HTMLVykingApparelElement = self.HTMLVykingApparelElement || {};\n'
                     .concat(config.isDisabled != null ? `        self.HTMLVykingApparelElement.isDisabled = ${config.isDisabled};\n` : '')
@@ -622,6 +624,13 @@ configuration or device capabilities');
                         vykingApparel.addEventListener('imageprocessorchanged', it => {
                             if (!it.detail.success) {
                                alert('Failed to load the image processor. ' + it.detail.cause?.cause ?? it.detail.cause)
+                            }
+                        })
+
+                         vykingApparel.addEventListener('error', it => {
+                            if (it.error.name === 'NotAllowedError') {
+                                console.info('CAMERA PERMISSION DENIED')
+                                alert('Camera permission denied. Please allow camera access to use VTO.')
                             }
                         })
                     }
