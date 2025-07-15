@@ -45,7 +45,8 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     - Fixed an issue where the code was looking for "environmentImage-viewer" instead of "environmentImage_viewer" in the offsets.json file.
 - 3.3.0.2.3
     - Fixed a regression bug where the model didn't reload after a VTO session finished. 
-
+- 3.3.0.2.4
+    - Minor fix to make the play button visible if the user declines camera permission for the VTO.
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.
