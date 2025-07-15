@@ -585,6 +585,11 @@ configuration or device capabilities');
             width: 100%;
         }
 
+        /* This will allow the play button to be visible if the user denies camera access. */
+        vyking-apparel::part(default-play) {
+            display: inline-block
+        }
+
         ${config.style ?? ''}
     </style>
 </head>
