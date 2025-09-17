@@ -63,6 +63,7 @@ const preloaded = new Map<string, boolean>();
 
 let dracoDecoderLocation: string;
 const dracoLoader = new DRACOLoader();
+dracoLoader.setWorkerLimit(2);
 
 let ktx2TranscoderLocation: string;
 const ktx2Loader = new KTX2Loader();

@@ -47,6 +47,8 @@ Vyking have extended Google's model-viewer to load its 3D model from a Vyking of
     - Fixed a regression bug where the model didn't reload after a VTO session finished. 
 - 3.3.0.2.4
     - Minor fix to make the play button visible if the user declines camera permission for the VTO.
+- 3.3.0.2.5
+    - Reduce memory footprint by reducing the number of DRACOLoader workers. 
 # Attributes
 ## vto
 Enable the virtual try on (VTO) button.

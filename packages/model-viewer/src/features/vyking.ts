@@ -62,7 +62,7 @@ export const VykingMixin = <T extends Constructor<ModelViewerElementBase & Annot
             return Renderer.singleton.canvas3D
         }
 
-        #VykingMixinVersion = "3.3.0-2.4"
+        #VykingMixinVersion = "3.3.0-2.5"
         #internetLoggingProperties = {
             isSuspended: false,
             loggingEnabled: true,
